@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# 提交前跑两道闸门：
+#   1. 内置域名清单与版本号必须同步（.trae/rules/project_rules.md 第 39.3 节）
+#   2. 静态闸门 ktlintCheck + detekt（第 42.1 节）
+#
+# 第 1 道不依赖 Gradle，任何提交都会执行。第 2 道只在暂存区含 .kt/.kts 时才跑 Gradle：
+# 改一份文档也触发全量构建，只会逼人养成使用 --no-verify 的习惯，钩子随之失效。
+
+set -euo pipefail
+
+readonly repository_root_directory="$(git rev-parse --show-toplevel)"
+readonly domains_manifest_path="app/src/main/assets/domains.txt"
+readonly domains_version_path="app/src/main/assets/domains.version"
+
+readonly staged_paths="$(git diff --cached --name-only)"
+
+# 第 39.3 节：清单与版本号必须在同一次变更里一起更新，否则已安装的用户永远拿不到新增域名。
+# 这是整条链路上最容易漏的一步——漏了不会报错，只会静默失效，所以在闸门上拦，不留给评审。
+if printf '%s\n' "${staged_paths}" | grep -qx "${domains_manifest_path}"; then
+    if ! printf '%s\n' "${staged_paths}" | grep -qx "${domains_version_path}"; then
+        printf '提交被拒绝：%s 已改动，但 %s 未一并暂存。\n' \
+            "${domains_manifest_path}" "${domains_version_path}" >&2
+        printf '第 39.3 节要求两者在同一次变更里一起更新。\n' >&2
+        exit 1
+    fi
+
+    staged_version_text="$(git show ":${domains_version_path}" | tr -d '[:space:]')"
+
+    if ! printf '%s' "${staged_version_text}" | grep -Eq '^[0-9]+$'; then
+        printf '提交被拒绝：%s 必须只包含一个整数，实际内容：%s\n' \
+            "${domains_version_path}" "${staged_version_text}" >&2
+        exit 1
+    fi
+
+    # 首次提交时 HEAD 尚不存在，取不到已提交版本是正常情况，此时跳过比较。
+    committed_version_text="$(git show "HEAD:${domains_version_path}" 2>/dev/null | tr -d '[:space:]' || true)"
+
+    if [[ -n "${committed_version_text}" ]] && (( staged_version_text <= committed_version_text )); then
+        printf '提交被拒绝：版本号必须递增（已提交 %s，本次 %s）。\n' \
+            "${committed_version_text}" "${staged_version_text}" >&2
+        printf '增量导入依赖版本号比较，原地不变等于新域名不会被导入。\n' >&2
+        exit 1
+    fi
+fi
+
+if ! printf '%s\n' "${staged_paths}" | grep -Eq '\.kts?$'; then
+    exit 0
+fi
+
+# Android 工程尚未落地时 gradlew 不存在，此处优雅跳过而不是报错，
+# 否则第一版规则文档就提交不了。
+if [[ ! -x "${repository_root_directory}/gradlew" ]]; then
+    printf '跳过静态闸门：找不到可执行的 gradlew。\n' >&2
+    exit 0
+fi
+
+printf '运行静态闸门：ktlintCheck detekt\n'
+
+if ! "${repository_root_directory}/gradlew" \
+    --project-dir "${repository_root_directory}" \
+    --console=plain \
+    --quiet \
+    ktlintCheck detekt; then
+    printf '\n提交被拒绝：静态闸门未通过。\n' >&2
+    printf '修正后重新暂存再提交；确认只是环境问题可用 git commit --no-verify。\n' >&2
+    exit 1
+fi
+
+printf '静态闸门通过。\n'

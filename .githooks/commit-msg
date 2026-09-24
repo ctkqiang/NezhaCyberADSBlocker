@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# 校验提交信息是否符合 .trae/rules/project_rules.md 的约定：Conventional Commits 形式、
+# 范围限定在本项目的模块清单内、主题不以句号收尾、正文必须存在。
+#
+# 做成钩子而不是写在文档里，是因为格式问题必须在提交那一刻拦掉。留到代码评审再提，
+# 成本高得多，而且评审者会开始数标点，而不是看实现。
+#
+# 需要新增范围时，必须同时修改本文件与 .trae/rules/project_rules.md，两处一起改。
+
+set -euo pipefail
+
+readonly commit_message_file_path="$1"
+
+# 取第一条非空非注释行。git 会把 # 注释和 --verbose 的 diff 一并写进这个文件，
+# 所以不能直接取第一行。用 awk 而非 grep：grep 一行都没匹配上时返回非零，
+# 配合 set -e 会静默退出，钩子反而变成放行。
+subject_text="$(awk 'NF && $1 != "#" { print; exit }' "${commit_message_file_path}")"
+
+# git 自动生成的合并、回滚与 fixup 消息直接放行。为它们报错只会逼人使用 --no-verify，
+# 而 --no-verify 一旦成为习惯，这个钩子就失效了。
+case "${subject_text}" in
+    "Merge "* | "Revert "* | "fixup! "* | "squash! "*)
+        exit 0
+        ;;
+esac
+
+if [[ -z "${subject_text}" ]]; then
+    printf '提交被拒绝：提交信息为空。\n' >&2
+    printf '期望形式：feat(network): 用一句话说明这次改了什么\n' >&2
+    exit 1
+fi
+
+# 范围与本项目的模块结构（rules.md 第 27 节）对齐：rules 指 .trae 下的规则与文档。
+readonly allowed_scope_pattern="app|core|feature|network|analysis|data|rules|build"
+readonly conventional_commit_pattern="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\((${allowed_scope_pattern})\): .+"
+
+if ! printf '%s' "${subject_text}" | grep -Eq "${conventional_commit_pattern}"; then
+    printf '提交被拒绝：主题不符合 Conventional Commits 形式，或使用了未登记的范围。\n' >&2
+    printf '实际主题：%s\n' "${subject_text}" >&2
+    printf '期望形式：<类型>(<范围>): <描述>\n' >&2
+    printf '可用类型：feat fix docs style refactor perf test build ci chore revert\n' >&2
+    printf '可用范围：%s\n' "${allowed_scope_pattern}" >&2
+    printf '需要新增范围时，请同时修改 rules.md 第 27 节与本钩子。\n' >&2
+    exit 1
+fi
+
+# 按字节放宽到 100 而不是按字符卡 72：中文一个字占 3 字节，按字符卡会把正常的中文主题误拒。
+subject_byte_length="$(printf '%s' "${subject_text}" | wc -c | tr -d '[:space:]')"
+
+if (( subject_byte_length > 100 )); then
+    printf '提交被拒绝：主题过长（%s 字节，上限 100）。\n' "${subject_byte_length}" >&2
+    printf '过长的主题在 git log --oneline 里会被截断，请把细节移入正文。\n' >&2
+    exit 1
+fi
+
+if [[ "${subject_text}" == *. || "${subject_text}" == *。 ]]; then
+    printf '提交被拒绝：主题以句号收尾。主题是标题，不是句子。\n' >&2
+    exit 1
+fi
+
+# 正文必须存在。本项目的提交信息要交代「为什么」——标题只能容纳结论，
+# 改动的目的与实现逻辑没有地方写就会丢失，所以这里卡住而不是默认放行。
+body_line_count="$(awk '
+    !found_subject {
+        if (NF && $1 != "#") { found_subject = 1 }
+        next
+    }
+    !in_body {
+        if (NF == 0) { in_body = 1 }
+        next
+    }
+    NF && $1 != "#" { count++ }
+    END { print count + 0 }
+' "${commit_message_file_path}")"
+
+if (( body_line_count == 0 )); then
+    printf '提交被拒绝：缺少正文。\n' >&2
+    printf '请在标题下空一行，用中文说明这次改动的内容、目的与实现逻辑。\n' >&2
+    exit 1
+fi
+
+exit 0
