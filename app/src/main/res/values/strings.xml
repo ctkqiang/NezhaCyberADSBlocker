@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">哪吒反广</string>
+
+  <!-- 悬浮底栏的五个一级入口 -->
+  <string name="tab_home">首页</string>
+  <string name="tab_applications">应用</string>
+  <string name="tab_rules">规则</string>
+  <string name="tab_statistics">统计</string>
+  <string name="tab_settings">设置</string>
+
+  <!-- 页面标题，与工程规则第 5 节列出的页面一一对应 -->
+  <string name="section_home">首页</string>
+  <string name="section_application_list">应用列表</string>
+  <string name="section_application_detail">应用详情</string>
+  <string name="section_apk_analysis">APK 分析</string>
+  <string name="section_blocklist">黑名单</string>
+  <string name="section_allowlist">白名单</string>
+  <string name="section_statistics">统计</string>
+  <string name="section_network_activity">网络活动</string>
+  <string name="section_settings">设置</string>
+
+  <!-- 常驻通知。隧道运行时用户必须能看见状态，并能不打开应用就断开 -->
+  <string name="vpn_notification_channel_name">隧道运行状态</string>
+  <string name="vpn_notification_title">哪吒反广正在接管域名解析</string>
+  <string name="vpn_notification_text">正在转发 DNS 查询</string>
+  <string name="vpn_notification_action_stop">停止</string>
+
+  <!-- 首页：状态环文案 -->
+  <string name="home_status_unprotected">未保护</string>
+  <string name="home_status_starting">建立中</string>
+  <string name="home_status_protected">已保护</string>
+  <string name="home_status_stopping">停止中</string>
+  <string name="home_status_failed">启动失败</string>
+
+  <string name="home_caption_unprotected">点按下方按钮开始接管域名解析</string>
+  <string name="home_caption_starting">正在与系统协商隧道</string>
+  <string name="home_caption_protected">隧道运行中，域名解析已接管</string>
+  <string name="home_caption_stopping">正在释放隧道资源</string>
+  <string name="home_caption_failed">隧道未能建立</string>
+
+  <!-- 首页：主按钮 -->
+  <string name="home_action_start">开启保护</string>
+  <string name="home_action_stop">停止保护</string>
+  <string name="home_action_busy">请稍候</string>
+
+  <!-- 首页：提示与失败原因 -->
+  <string name="home_hint_authorization">需要系统 VPN 授权才能建立隧道，授权后将自动继续。</string>
+  <string name="home_hint_tunnel_failed">隧道建立失败，请确认网络可用后重试。</string>
+  <string name="home_hint_foreground_unavailable">系统不允许前台服务运行，请检查通知权限后重试。</string>
+  <string name="home_hint_upstream_unreachable">连续多次无法取回解析结果，已自动断开隧道以免影响其它应用。请检查网络后重试。</string>
+
+  <!-- 首页：接管范围说明。必须如实描述当前能力边界，不能宣称未实现的能力 -->
+  <string name="home_scope_title">当前接管范围</string>
+  <string name="home_scope_value">仅域名解析　IPv4 / UDP 53</string>
+  <string name="home_scope_note">隧道只接管本应用自造的 DNS 地址，其它流量不经过隧道。命中内置清单或关键词规则的域名在本机直接返回 NXDOMAIN，不向上游发起查询。未选择逐应用时接管全部应用，选择后只接管选中的应用。IPv6 与 TCP 53 不接管，TLS 内容不解析。</string>
+
+  <!-- 尚未接入的页面空状态文案，对应功能落地后逐条替换 -->
+  <string name="placeholder_application_list">尚未接入已安装应用发现。</string>
+  <string name="placeholder_application_detail">尚未接入单应用保护开关与已观测域名。</string>
+  <string name="placeholder_apk_analysis">尚未接入 APK 静态分析与候选域名提取。</string>
+  <string name="placeholder_blocklist">尚未载入内置域名清单与用户阻断规则。</string>
+  <string name="placeholder_allowlist">尚未载入用户放行规则。</string>
+  <string name="placeholder_statistics">尚未接入统计聚合。</string>
+  <string name="placeholder_network_activity">尚未接入运行时域名观测。</string>
+  <string name="placeholder_settings">尚未接入设置项。</string>
+
+  <!-- 空状态通用文案 -->
+  <string name="empty_state_tag">后续阶段接入</string>
+
+  <!-- 网络活动页 -->
+  <string name="network_filter_all">全部</string>
+  <string name="network_filter_blocked">只看拦截</string>
+  <string name="network_search_hint">按域名筛选</string>
+  <string name="network_app_all">全部应用</string>
+  <string name="network_summary">最近 %1$d 条观测，其中拦截 %2$d 条</string>
+  <string name="network_summary_filtered">符合筛选条件 %1$d 条，其中拦截 %2$d 条</string>
+  <string name="network_empty_tag">尚无观测</string>
+  <string name="network_filter_empty_tag">无匹配</string>
+  <string name="network_pause_action">暂停</string>
+  <string name="network_resume_action">继续</string>
+  <string name="network_paused_note">已暂停：显示的是按下暂停那一刻的记录，点「继续」会跳到最新。</string>
+  <string name="network_logging_disabled">记录已关闭：当前不记录任何域名观测。隧道仍在正常过滤与拦截，可在「设置 → 隐私与安全」里重新打开。</string>
+  <string name="network_logging_disabled_tag">记录已关闭</string>
+  <string name="network_logging_disabled_note">记录已关闭：下面看到的是关闭之前留存的内容，不会再有新记录。</string>
+  <string name="network_loading">正在读取观测记录…</string>
+  <string name="network_empty">还没有观测到域名查询。开启保护后，本机应用发起的解析请求会出现在这里。</string>
+  <string name="network_filter_empty">有观测记录，但没有一条符合当前的域名、动作与应用筛选条件。</string>
+  <string name="network_app_unknown">未知来源</string>
+  <string name="network_action_blocked">已拦截</string>
+  <string name="network_action_relayed">已放行</string>
+  <string name="network_reason_builtin">内置清单</string>
+  <string name="network_reason_keyword">关键词 %1$s</string>
+  <string name="network_reason_user">用户规则 %1$s</string>
+  <string name="network_reason_none">未命中任何规则</string>
+
+  <!-- 统计页 -->
+  <string name="statistics_blocked_caption">累计拦下的域名查询</string>
+  <string name="statistics_observed">已观测查询</string>
+  <string name="statistics_blocked">已拦截</string>
+  <string name="statistics_relayed">已放行</string>
+  <string name="statistics_session_blocked_hosts">本次会话拦截域名</string>
+  <string name="statistics_protected_applications">受保护应用</string>
+  <string name="statistics_protected_all">全部应用</string>
+  <string name="statistics_scope_note">「已观测 / 已拦截」跨会话累计并保存在本机；「本次会话拦截域名」在重启归零，因为跨会话去重要长期保存全部域名集合。放行不等于用户放行，绝大多数放行只是没有规则命中。</string>
+  <string name="statistics_rules_title">规则</string>
+  <string name="statistics_builtin_rules">内置清单</string>
+  <string name="statistics_builtin_rules_value">版本 %1$d · %2$d 条</string>
+  <string name="statistics_user_rules">用户规则</string>
+  <string name="statistics_count_value">%1$d</string>
+  <string name="statistics_top_title">最近拦截最多的域名</string>
+  <string name="statistics_top_empty">最近窗口内还没有拦截记录。</string>
+  <string name="statistics_top_note">来自最近观测窗口，不是全量历史。</string>
+  <string name="statistics_applications_title">按应用</string>
+  <string name="statistics_app_unknown">未知来源</string>
+  <string name="statistics_app_counts">观测 %1$d · 拦截 %2$d · 放行 %3$d</string>
+  <string name="statistics_applications_empty">最近窗口内还没有可归属到应用的观测。</string>
+  <string name="statistics_applications_note">来自最近观测窗口，不是全量历史。归属到应用需要系统提供连接归属查询（Android 10 及以上），更低版本的应用一律显示为未知来源。</string>
+  <string name="statistics_clear_title">清除统计</string>
+  <string name="statistics_clear_note">清空累计计数与最近观测记录。规则、关键词策略与逐应用选择都有各自的存储，不受影响。</string>
+  <string name="statistics_clear_confirm_note">清除后无法恢复：累计计数与最近观测记录都会归零。</string>
+  <string name="statistics_clear_action">清除统计</string>
+  <string name="statistics_clear_confirm_action">确认清除</string>
+  <string name="statistics_clear_cancel_action">取消</string>
+  <string name="statistics_logging_disabled_note">记录已关闭：下面的读数停在关闭那一刻，不会继续增长。隧道仍在正常过滤与拦截。</string>
+
+  <!-- 应用列表页 -->
+  <string name="applications_summary_default">当前未限定应用：所有应用的域名解析都会被接管。选择应用后只接管选中的应用，其余应用不受影响。</string>
+  <string name="applications_summary_selected">已选择 %1$d 个应用：只有这些应用经过隧道，其余应用的域名解析完全不受影响。</string>
+  <string name="applications_clear_selection">取消逐应用选择</string>
+  <string name="applications_restart_hint">逐应用路由在建立隧道时确定，因此修改选择后会自动重建隧道，期间解析会短暂中断。</string>
+  <string name="applications_row_stats">观测 %1$d · 拦截 %2$d（最近窗口）</string>
+  <string name="applications_permissions_runtime">运行时权限 %1$d/%2$d 已授予</string>
+  <string name="applications_permissions_none">无运行时权限</string>
+  <string name="applications_permissions_unknown">权限信息不可读</string>
+  <string name="applications_empty_tag">未读取到应用</string>
+  <string name="applications_loading">正在读取已安装应用…</string>
+  <string name="applications_empty">未读取到任何带启动入口的应用。Android 11 起包可见性默认受限，请授予「查询所有应用」权限后重试。</string>
+  <string name="applications_empty_no_permission">当前没有「查询所有应用」权限，无法读取设备上的应用列表。请在系统设置中授予该权限。</string>
+  <string name="applications_retry">重新读取</string>
+  <string name="applications_open_settings">打开权限设置</string>
+
+  <!-- 应用详情页：权限审计视图。只读，不提供任何修改入口 -->
+  <string name="application_detail_unknown_app">未知来源</string>
+  <string name="application_detail_permissions_title">声明的权限</string>
+  <string name="application_detail_permissions_unknown">读不到这个应用的权限信息：它可能已被卸载，或对本应用不可见。</string>
+  <string name="application_detail_permissions_empty">该应用没有显式声明任何权限。</string>
+  <string name="application_detail_permissions_summary">运行时权限 %1$d/%2$d 已授予</string>
+  <string name="application_detail_permission_name">%1$s</string>
+  <string name="application_detail_permission_name_runtime">%1$s · 运行时权限</string>
+  <string name="application_detail_permission_granted">已授予</string>
+  <string name="application_detail_permission_denied">未授予</string>
+  <string name="application_detail_permissions_note">运行时权限就是系统设置里可以由你开关的那些（相机、位置、通讯录等），它们排在前面；普通权限安装即授予、用户关不掉，因此排在后面。第二行是权限的平台标识，可以拿去和系统设置里的条目对应。</string>
+  <string name="application_detail_domains_title">请求过的域名</string>
+  <string name="application_detail_domain_counts">观测 %1$d · 拦截 %2$d</string>
+  <string name="application_detail_domains_empty">最近观测窗口内没有该应用的记录。</string>
+  <string name="application_detail_more">还有 %1$d 个域名未显示</string>
+  <string name="application_detail_note">数据来自最近观测窗口，不是全量历史。归属到应用需要系统提供连接归属查询（Android 10 及以上），更低版本显示为未知来源。</string>
+  <string name="application_detail_boundary_note">这一页只做审计，不能改权限：Android 只允许设备所有者或资料所有者改动其它应用的授权状态，普通安装的应用没有这个能力。另外，「这一次网络请求用了哪个权限」在系统层面并不存在——网络请求只与 INTERNET 权限相关，系统也不记录逐请求的权限归属，因此上面列的是该应用持有的权限，而不是某次请求用掉的权限。</string>
+  <string name="application_detail_empty_tag">未选择应用</string>
+  <string name="application_detail_loading">正在读取…</string>
+  <string name="application_detail_empty">从「应用列表」里点一个应用，这里会显示它的权限清单与请求过的域名。</string>
+
+  <!-- 设置页 -->
+  <string name="settings_about_title">版本与规则</string>
+  <string name="settings_app_version">应用版本</string>
+  <string name="settings_keyword_title">关键词兜底规则</string>
+  <string name="settings_keyword_note">关键词兜底规则在「规则 → 黑名单」页里查看、增删与开关。它位于优先级最后一档，只在用户规则与内置清单都没命中时执行。</string>
+  <string name="settings_privacy_title">隐私</string>
+  <string name="settings_privacy_note">不收集、不上报、不出售任何用户数据，不含遥测与统计分析。观测记录只保存域名、动作、命中规则与时间，不保存任何载荷内容；全部数据仅存于本机。</string>
+  <string name="settings_pending_note">尚未接入的设置项：白名单批量导入、DNS 上游自定义。</string>
+
+  <!-- 设置页：关于开发者。作者与来源信息是开源项目规范的一部分（工程规则第 0.1 节） -->
+  <string name="settings_dev_title">关于开发者</string>
+  <string name="settings_dev_app_name">应用名称</string>
+  <string name="settings_dev_app_name_value">%1$s（NezhaCyberADSBlocker）</string>
+  <string name="settings_dev_package">包名 / Bundle ID</string>
+  <string name="settings_dev_author">作者</string>
+  <string name="settings_dev_author_value">哪吒网络安全的钟智强</string>
+  <string name="settings_dev_contact">联系方式</string>
+  <string name="settings_dev_contact_value">johnmelodymel@qq.com</string>
+  <string name="settings_dev_repository">源码仓库</string>
+  <string name="settings_dev_repository_value">https://github.com/ctkqiang/NezhaCyberADSBlocker</string>
+  <string name="settings_dev_license">开源性质</string>
+  <string name="settings_dev_license_value">开源项目</string>
+  <string name="settings_dev_audience">服务对象</string>
+  <string name="settings_dev_audience_value">为人民而做，由人民共建, 谁把程序黑了，谁就是汉奸。</string>
+
+  <!-- 设置页：隐私与安全。三项都是真正生效的规则，不摆装饰性开关 -->
+  <string name="settings_privacy_controls_title">隐私与安全</string>
+  <string name="settings_privacy_logging">记录域名观测</string>
+  <string name="settings_privacy_logging_note">关掉后不再记录任何域名观测与累计计数。隧道照常过滤与拦截——过滤只依赖规则引擎，与是否留记录无关，因此关掉它不等于关掉保护。既有记录不会被删除，需要时可在统计页单独清除。</string>
+  <string name="settings_privacy_retention">观测保留量</string>
+  <string name="settings_retention_option">%1$d 条</string>
+  <string name="settings_privacy_retention_note">同时决定界面保留的条数与本机日志的行数上限，两者一起变，不会出现「界面只剩几条、磁盘上还躺着上千行」。</string>
+  <string name="settings_blocked_response_title">命中规则时的应答方式</string>
+  <string name="settings_blocked_response_nxdomain">域名不存在</string>
+  <string name="settings_blocked_response_refused">拒绝解析</string>
+  <string name="settings_blocked_response_zero">0.0.0.0</string>
+  <string name="settings_blocked_response_note">三种都在本机合成、都不向上游发起查询，因此都不会把访问意图泄露给解析服务。它们的区别在于客户端怎么理解这次失败：域名不存在最标准；拒绝解析说的是「我不做这件事」；0.0.0.0 是「解析成功但地址不可用」，连接会立刻失败。不同应用的反应并不一致，挑一个顺手的即可。</string>
+  <string name="settings_permission_boundary_note">本应用无法修改其它应用的权限。Android 只允许设备所有者或资料所有者改动授权状态，普通安装的应用没有这个能力，因此这里不提供那个入口。权限清单可以在「应用 → 应用详情」里查看。</string>
+
+  <!-- 通知拦截：权限、规则列表、编辑器、替代通知的文案 -->
+  <string name="notification_service_label">哪吒反广通知拦截</string>
+  <string name="section_notification_rules">通知拦截</string>
+  <string name="notification_access_required_title">通知访问权限未开启</string>
+  <string name="notification_access_required_message">哪吒反广需要通知访问权限才能检测和处理通知。授权后本应用可以读到通知的标题与正文，规则只对你在列表里指定的应用生效。</string>
+  <string name="notification_access_required_action">前往系统设置</string>
+  <string name="notification_rules_title">通知拦截规则</string>
+  <string name="notification_rules_empty">还没有通知拦截规则。新建一条后，指定应用的通知里出现匹配文字时会被标记为已拦截。</string>
+  <string name="notification_rules_empty_tag">尚无规则</string>
+  <string name="notification_rules_add_action">新建规则</string>
+  <string name="notification_rules_row_contains">包含：%1$s</string>
+  <string name="notification_rules_delete_action">删除</string>
+  <string name="notification_rules_edit_action">编辑</string>
+  <string name="notification_rule_editor_new_title">新建通知拦截规则</string>
+  <string name="notification_rule_editor_edit_title">编辑通知拦截规则</string>
+  <string name="notification_rule_editor_application">目标应用</string>
+  <string name="notification_rule_editor_application_placeholder">选择应用</string>
+  <string name="notification_rule_editor_match_text">匹配文字</string>
+  <string name="notification_rule_editor_match_text_placeholder">例如：优惠</string>
+  <string name="notification_rule_editor_save">保存</string>
+  <string name="notification_rule_editor_cancel">取消</string>
+  <string name="notification_rule_editor_note">匹配方式为「包含」，大小写不敏感。规则只对所选应用生效，不会影响其它应用。</string>
+  <string name="notification_rule_picker_title">选择应用</string>
+  <string name="notification_rule_picker_search">搜索应用</string>
+  <string name="notification_rule_picker_empty">没有匹配的应用。</string>
+  <string name="notification_rule_picker_unknown">未知应用</string>
+  <string name="notification_error_empty_match_text">匹配文字不能为空。</string>
+  <string name="notification_error_duplicate">该应用下已有相同的匹配文字。</string>
+  <string name="notification_error_rule_missing">这条规则已经不存在了。</string>
+  <string name="notification_rules_created">规则已创建。</string>
+  <string name="notification_rules_updated">规则已更新。</string>
+  <string name="notification_rules_deleted">规则已删除。</string>
+  <string name="notification_rules_platform_note">拦截发生在通知「已经发布」之后：系统在应用把通知交给通知栏之后才回调本应用，因此本应用只能改变这条通知在通知栏里的去向，无法阻止应用生成通知。展开被拦截的那条通知可以看到原应用、命中的规则与原通知内容；原通知读不到文本时会如实说明，不会编造内容。</string>
+  <string name="notification_blocked_title">哪吒反广已拦截此通知</string>
+  <string name="notification_blocked_original_app">原应用：%1$s</string>
+  <string name="notification_blocked_matched_rule">匹配规则：%1$s</string>
+  <string name="notification_blocked_original_text">原通知：%1$s</string>
+  <string name="notification_blocked_original_text_missing">（原通知没有可读取的文本）</string>
+  <string name="notification_blocked_channel_name">已拦截的通知</string>
+  <string name="notification_blocked_channel_description">被规则拦截的通知会在这里标出，原内容一并保留。</string>
+
+  <!-- 规则页（黑名单与白名单共用同一套文案，只有目标动作不同） -->
+  <string name="rules_add_hint">输入域名，例如 ads.example.com</string>
+  <string name="rules_add_action">添加</string>
+  <string name="rules_message_added">已添加</string>
+  <string name="rules_message_invalid">域名不合法：至少需要两段，只能包含字母、数字、连字符与下划线</string>
+  <string name="rules_message_invalid_keyword">关键词不合法：只能是单个 DNS 标签，例如 ads 或 ad-server</string>
+  <string name="rules_message_exists">这条规则已经存在</string>
+  <string name="rules_message_not_found">规则不存在</string>
+  <string name="rules_user_block_section">用户阻断规则（%1$d 条）</string>
+  <string name="rules_user_allow_section">用户放行规则（%1$d 条）</string>
+  <string name="rules_user_block_empty">还没有用户阻断规则。在上方输入域名即可添加。</string>
+  <string name="rules_user_allow_empty">还没有用户放行规则。被误拦的域名可以加到这里。</string>
+  <string name="rules_delete_action">删除</string>
+  <string name="rules_source_user">用户规则</string>
+  <string name="rules_source_builtin">内置清单</string>
+  <string name="rules_keyword_section">关键词兜底（%1$d 个）</string>
+  <string name="rules_keyword_add_hint">输入关键词，例如 ads</string>
+  <string name="rules_keyword_empty">还没有关键词。关键词是单个 DNS 标签，不是域名。</string>
+  <string name="rules_keyword_note">关键词是单个 DNS 标签：ads 会命中 ads.example.com 与 ads-banner.example.com，但不做子串匹配，因此 uploads.example.com 这类仅含 ads 子串的正常域名不会被误伤。它位于优先级最后一档，只在上面两档与内置清单都没命中时执行。关掉开关不会清空关键词。</string>
+  <string name="rules_builtin_section">内置清单</string>
+  <string name="rules_builtin_search_hint">搜索内置清单</string>
+  <string name="rules_builtin_search_empty">没有匹配的条目。</string>
+  <string name="rules_builtin_limit_note">只显示前 %1$d 条匹配结果，请继续输入以缩小范围。</string>
+  <string name="rules_builtin_override_note">内置清单随应用分发、运行时只读，因此这里只能启停、不能删除或编辑。启停只记录覆写，清单更新时不会覆盖你的选择。</string>
+  <string name="rules_allow_note">放行规则的优先级高于内置清单与关键词兜底，用于纠正误拦。域名不区分大小写，结尾点会被忽略。</string>
+
+  <!-- APK 分析页 -->
+  <string name="apk_pick_action">选择 APK 文件</string>
+  <string name="apk_analyzing">正在解析 DEX 字符串池…</string>
+  <string name="apk_failed">解析失败：所选文件不是有效的 APK，或已无法读取。</string>
+  <string name="apk_result_package">包名</string>
+  <string name="apk_result_version">版本</string>
+  <string name="apk_result_dex">DEX 文件</string>
+  <string name="apk_result_candidates">候选域名</string>
+  <string name="apk_result_unknown">未读取到</string>
+  <string name="apk_dex_count">%1$d 个</string>
+  <string name="apk_truncated">候选数量已截断，只列出前 %1$d 条。</string>
+  <string name="apk_candidates_title">候选域名（按出现次数排序）</string>
+  <string name="apk_candidate_occurrences">%1$d 次</string>
+  <string name="apk_candidate_observed">最近观测中出现</string>
+  <string name="apk_note">这些是从 DEX 字符串池提取的候选，只说明「APK 里出现了这个域名」，既不等于它会联网，更不等于它是广告。字符串池里还会包含反向包名等非网络字符串，当前没有做区分。</string>
+  <string name="apk_empty_tag">未选择文件</string>
+  <string name="apk_empty">选择一个 APK 文件后，应用会解析它的 DEX 字符串池并列出候选域名，再与运行时观测对照。</string>
+</resources>

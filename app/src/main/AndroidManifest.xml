@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!--
+    网络与隧道。INTERNET 是 VPN 把放行流量转发到上游的前提，缺少它隧道建立后无法回源；
+    ACCESS_NETWORK_STATE 用于监听默认网络变化，在 Wi-Fi 与蜂窝切换时重建上游通道。
+  -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+  <!--
+    前台服务。过滤引擎需要长期驻留，且运行状态必须对用户可见，因此 VPN 服务是前台服务。
+    FOREGROUND_SERVICE_SYSTEM_EXEMPTED 与 systemExempted 类型配对使用：官方文档把
+    「通过 设置 > 网络和互联网 > VPN 配置的 VPN 应用」列为该类型的认可用例；
+    声明该类型但不满足此条件时，系统会抛 ForegroundServiceTypeNotAllowedException。
+  -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
+
+  <!--
+    通知。Android 13 起 POST_NOTIFICATIONS 是运行时权限，未授予时前台服务的通知不会显示，
+    用户将看不到 VPN 正在运行。应在启动 VPN 前请求，而不是在应用启动时索取。
+  -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+  <!--
+    应用发现。逐应用过滤要求用户能看到设备上全部可联网的应用，而 Android 11 起包可见性
+    默认被过滤，只能查询到自动可见的应用；这是拿到完整列表的唯一机制。
+    注意：该权限被 Google Play 列为高风险，需在 Play Console 的「应用内容 > 权限声明」
+    提交用途说明并通过审核后才能发布。
+  -->
+  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+  <!--
+    包可见性兜底。Android 11 起，即使声明了 QUERY_ALL_PACKAGES，部分设备仍会过滤可见包列表。
+    此处显式声明要查询所有带启动入口的应用，确保 queryIntentActivities 能拿到完整的启动器应用清单，
+    不依赖 QUERY_ALL_PACKAGES 是否被系统真正授予。
+  -->
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.MAIN" />
+      <category android:name="android.intent.category.LAUNCHER" />
+    </intent>
+  </queries>
+
+  <application
+    android:name=".NezhaApplication"
+    android:allowBackup="false"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.NezhaCyberADSBlocker">
+
+    <activity
+      android:name=".MainActivity"
+      android:exported="true"
+      android:label="@string/app_name">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+
+    <!--
+      隧道服务。exported=false 且带 BIND_VPN_SERVICE 权限：只有系统在用户授权后才会绑定它，
+      其它应用无法直接启动本服务。foregroundServiceType 必须与 manifest 权限中声明的类型一致，
+      否则 startForeground 会抛 ForegroundServiceTypeNotAllowedException。
+      此处不能设 android:stopWithTask，让用户在最近任务里划掉应用时隧道保持运行（与通知栏一致）。
+    -->
+    <service
+      android:name=".network.vpn.NezhaVpnService"
+      android:exported="false"
+      android:foregroundServiceType="systemExempted"
+      android:permission="android.permission.BIND_VPN_SERVICE">
+      <intent-filter>
+        <action android:name="android.net.VpnService" />
+      </intent-filter>
+    </service>
+
+    <!--
+      通知监听服务。它是用户可见的「通知使用权」授权对象：用户必须在系统设置里手动开启，
+      应用无法自行请求。declared 为 exported=false 的理由与上面的 VPN 服务一致——
+      只有系统进程会绑定它，而系统自身的绑定请求在权限检查里走的是「调用方即系统」这条路径；
+      外部应用既绑不上，即使绑上也缺少 BIND_NOTIFICATION_LISTENER_SERVICE（签名级）权限。
+    -->
+    <service
+      android:name=".notification.platform.NezhaNotificationListenerService"
+      android:exported="false"
+      android:label="@string/notification_service_label"
+      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+      <intent-filter>
+        <action android:name="android.service.notification.NotificationListenerService" />
+      </intent-filter>
+    </service>
+
+  </application>
+
+</manifest>
