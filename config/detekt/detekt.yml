@@ -1,0 +1,39 @@
+# detekt 规则覆盖。
+#
+# 通过 buildUponDefaultConfig 在 detekt 默认规则集之上做增量调整，只写出必须偏离默认值的项，
+# 因此本文件应当保持很短：新增条目意味着有一条通用规则不适用于本项目。
+
+exceptions:
+  # DNS 中继里的超时与网络切换是常态而非缺陷：逐条记录只会刷屏，丢弃本次查询并让客户端重试
+  # 才是正确行为，因此这两类异常允许被静默处理。
+  SwallowedException:
+    ignoredExceptionTypes:
+      - 'SocketTimeoutException'
+      - 'IOException'
+
+naming:
+  # Compose 的组件函数按官方约定使用大驼峰，与默认的 lowerCamelCase 冲突。
+  FunctionNaming:
+    ignoreAnnotated:
+      - 'Composable'
+
+  # 包名由工程规则第 0.1 节固定为 xin.ctkqiang.nezha_cyber.ads_block，其中带下划线。
+  # 放宽为允许下划线，同时收紧为全小写，与第 37.1 节「包名小写、使用单数领域名」一致。
+  PackageNaming:
+    packagePattern: '[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*'
+
+style:
+  # 早返回是工程规则第 42.3 节要求的压平手段（嵌套超过三层必须提前返回），
+  # 因此只有「正常流程里的多个出口」才算问题，守卫子句不计入。
+  ReturnCount:
+    excludeGuardClauses: true
+
+  # 硬编码色值与尺寸令牌本身就是「具名常量」，写属性初始值不等于魔法数字。
+  # 该开关只作用于属性声明；函数体内的裸数字仍然会被拦截。
+  MagicNumber:
+    ignorePropertyDeclaration: true
+
+  # @Preview 函数只被 IDE 通过反射调用，静态分析看不到调用点。
+  UnusedPrivateMember:
+    ignoreAnnotated:
+      - 'Preview'

@@ -1,0 +1,40 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 120
+
+[*.xml]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+# Kotlin 源码采用 IntelliJ/Android Studio 风格：它与本工程使用的 Compose 写法一致。
+# 仅有三处需要偏离默认值，理由各自写在下面。
+[*.kt]
+ktlint_code_style = android_studio
+ij_kotlin_imports_layout = *
+
+# Android Studio 风格默认禁止尾随逗号，而多行参数表与调用点保留尾随逗号是本工程约定。
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# @Composable 组件函数按 Compose 官方约定使用大驼峰，默认的驼峰校验会逐条误报。
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# 包名由工程规则第 0.1 节固定为 xin.ctkqiang.nezha_cyber.ads_block，其中含下划线，
+# 而该规则不允许下划线。命名约定本身由第 37.1 节约束，因此关闭这条机器校验。
+ktlint_standard_package-name = disabled
+
+# 构建脚本单独成段：其风格由 Gradle 版本决定，不与源码风格绑定。
+[*.kts]
+ij_kotlin_imports_layout = *
+
+[*.md]
+trim_trailing_whitespace = false

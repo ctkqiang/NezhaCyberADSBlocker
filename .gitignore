@@ -1,0 +1,18 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+**/build/
+
+# Kotlin 编译器与 IDE 缓存
+.kotlin/
+.cache/
+
+# 签名密钥库：只存于本地，不进入版本控制
+*.jks
+*.keystore
