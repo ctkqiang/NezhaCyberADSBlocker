@@ -21,6 +21,8 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaPrimaryButton
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaProtectionRing
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaScreenScaffold
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaSurfaceCard
+import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalInstalledApplicationSource
+import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalObservationStore
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaDimens
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaTheme
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaThemePreview
@@ -38,7 +40,15 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.vpn.NezhaVpnPreviewHost
 fun HomeScreen(modifier: Modifier = Modifier) {
     val vpnController = LocalVpnController.current
     val authorizationRequester = LocalVpnAuthorizationRequester.current
-    val viewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(vpnController))
+    val observationStore = LocalObservationStore.current
+    val installedApplicationSource = LocalInstalledApplicationSource.current
+    val viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModel.factory(
+            vpnController = vpnController,
+            observationStore = observationStore,
+            installedApplicationSource = installedApplicationSource,
+        ),
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
@@ -79,7 +89,52 @@ private fun ColumnScope.HomeContent(uiState: HomeUiState, onIntent: (HomeUiInten
         )
     }
     Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
+    LatestBlockedCard(latest = uiState.latestBlocked)
+    Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
     HomeScopeCard()
+}
+
+/**
+ * 最近拦截。
+ *
+ * 首页原本只有「开 / 关」与接管范围，用户看不出它到底在不在干活。摆上最近一条被拦下的域名，
+ * 保护就从抽象状态变成可核对的事实。
+ *
+ * 卡片里必须写明它只是最近一条、完整流水在别处：只给一条却不说明范围，会被当成实时计数。
+ */
+@Composable
+private fun LatestBlockedCard(latest: LatestBlocked?) {
+    val palette = NezhaTheme.palette
+    NezhaSurfaceCard {
+        BasicText(
+            text = stringResource(R.string.home_latest_blocked_title),
+            style = NezhaTheme.typography.title.copy(color = palette.textPrimary),
+        )
+        Spacer(modifier = Modifier.height(NezhaDimens.blockGap))
+        if (latest == null) {
+            BasicText(
+                text = stringResource(R.string.home_latest_blocked_empty),
+                style = NezhaTheme.typography.caption.copy(color = palette.textSecondary),
+            )
+        } else {
+            BasicText(
+                text = latest.host,
+                style = NezhaTheme.typography.body.copy(color = palette.brand),
+            )
+            latest.appLabel?.let { label ->
+                Spacer(modifier = Modifier.height(NezhaDimens.tightGap))
+                BasicText(
+                    text = stringResource(R.string.home_latest_blocked_app, label),
+                    style = NezhaTheme.typography.caption.copy(color = palette.textSecondary),
+                )
+            }
+            Spacer(modifier = Modifier.height(NezhaDimens.blockGap))
+            BasicText(
+                text = stringResource(R.string.home_latest_blocked_note),
+                style = NezhaTheme.typography.caption.copy(color = palette.textSecondary),
+            )
+        }
+    }
 }
 
 @Composable

@@ -16,7 +16,21 @@ import xin.ctkqiang.nezha_cyber.ads_block.domain.vpn.VpnSessionState
 data class HomeUiState(
     val session: VpnSessionState = VpnSessionState.Stopped,
     val authorizationRequired: Boolean = false,
+    val latestBlocked: LatestBlocked? = null,
 )
+
+/**
+ * 最近一次被拦下的查询。
+ *
+ * 只在首页显示**一条**：首页回答的是「现在有没有在保护我」，完整流水属于「网络活动」页。
+ * 把最后一条摆在首页是让它有实感——一个只显示开关状态的安全工具，用户无从判断它到底在不在干活。
+ *
+ * 不带时间戳：首页不做相对时间格式化（那需要一套本地化规则），精确时刻在网络活动页里有。
+ * 少了时间也就少了「这是刚才还是昨天」的信息，因此卡片必须写明它只是最近一条、
+ * 完整流水在别处，不能让用户把它当成实时读数。
+ */
+@Immutable
+data class LatestBlocked(val host: String, val appLabel: String?)
 
 /** 首页可派发的用户意图。 */
 sealed interface HomeUiIntent {
