@@ -25,12 +25,46 @@
 
 # ── 微博（com.sina.weibo）· 已确认 ──────────────────────────────────────────────
 # 新浪广告交易、广告位与营销域名
+com.sina.weibo ad.sina.com.cn
+com.sina.weibo adbox.sina.com.cn
+com.sina.weibo sax.sina.cn
 com.sina.weibo sax.sina.com.cn
 com.sina.weibo saxn.sina.com.cn
 com.sina.weibo sinaads.sina.com.cn
-com.sina.weibo adbox.sina.com.cn
 com.sina.weibo dcads.sina.com.cn
 com.sina.weibo emarketing.sina.com.cn
+# 微博自有广告平台（uve 段）：客户端拉取广告走 wbpullad.lua，它就在这两个主机上
+com.sina.weibo sdkapp.uve.weibo.com
+com.sina.weibo wbapp.uve.weibo.com
+# 广告点击与投放统计
+com.sina.weibo sdkclick.mobile.sina.cn
+com.sina.weibo wbclick.mobile.sina.cn
+com.sina.weibo c.biz.weibo.com
+com.sina.weibo c.wcpt.biz.weibo.com
+com.sina.weibo atm.sina.com
+com.sina.weibo tjs.sjs.sinajs.cn
+#
+# 特意**没有**收进来的三个主机，理由值得写下来，因为它们都出现在别家的去广告清单里：
+#   sdkapp.mobile.sina.cn —— 名字只说明它是一个 SDK 网关，无法确认是广告专用。本文件的
+#                            收录标准是「可确认的广告或追踪域名」，依据不足就不收。
+#   trends.mobile.sina.cn —— trends 更可能是热搜／推送这类功能，拦掉等于砍掉功能。
+#   game.weibo.com        —— 游戏中心是一个内容入口，不是广告位。拦它属于替用户做产品决策。
+# 这三条都遵循同一条原则：宁可漏拦，不误伤应用功能（工程规则第 17、32 节）。
+
+# ── 微博（com.sina.weibo）· HTTPDNS ────────────────────────────────────────────
+# 下面这一条与上面所有条目性质不同，必须单独说明，否则会被当成普通规则随手删掉。
+#
+# 微博用自己的 HTTPDNS 服务直接拿到 IP，不经过系统解析。凡是这样建立的连接，本应用在域名层
+# **完全看不到**——这不是清单漏了域名，而是拦截点根本不在那条路径上。因此上面那些广告域名
+# 在 HTTPDNS 生效时可能是空转的。
+#
+# 挡掉这个主机，是让微博退回系统解析、从而让上面那些域名重新可被拦截的唯一手段。这是各家
+# 去广告规则集的通行做法（它们为此专门维护一个「HTTPDNS 拦截器」模块，而不是把它混在广告域名里）。
+#
+# 代价必须说清：微博的 HTTPDNS 客户端按设计会降级到系统解析，但若某个版本不降级，
+# 微博可能出现加载变慢甚至失败。风险被限制在微博这一个应用内——应用专属规则只对左侧包名生效，
+# 其它应用完全不受影响。真出问题，删掉下面这一行即可，不需要改任何代码。
+com.sina.weibo dns.weibo.cn
 
 # ── 淘宝（com.taobao.taobao）· 已确认 ──────────────────────────────────────────
 # 阿里妈妈广告交易与广告埋点域名
