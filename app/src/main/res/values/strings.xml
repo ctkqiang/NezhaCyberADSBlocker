@@ -23,6 +23,7 @@
 
   <!-- 常驻通知。隧道运行时用户必须能看见状态，并能不打开应用就断开 -->
   <string name="vpn_notification_channel_name">隧道运行状态</string>
+  <string name="vpn_notification_channel_description">保护开启时常驻显示，用来确认隧道正在运行，并可随时停止。</string>
   <string name="vpn_notification_title">哪吒反广正在接管域名解析</string>
   <string name="vpn_notification_text">正在转发 DNS 查询</string>
   <string name="vpn_notification_action_stop">停止</string>
