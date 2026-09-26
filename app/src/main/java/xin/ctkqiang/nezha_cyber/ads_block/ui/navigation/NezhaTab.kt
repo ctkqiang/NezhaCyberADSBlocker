@@ -1,6 +1,7 @@
 package xin.ctkqiang.nezha_cyber.ads_block.ui.navigation
 
 import androidx.annotation.StringRes
+import xin.ctkqiang.nezha_cyber.ads_block.BuildConfig
 import xin.ctkqiang.nezha_cyber.ads_block.R
 
 /**
@@ -16,9 +17,13 @@ import xin.ctkqiang.nezha_cyber.ads_block.R
  * 隐私与传感器页归在「设置」下：它读的是系统权限，与本应用自己的过滤配置不是一回事，
  * 但用户的寻找路径是一致的——「我要调隐私相关的开关」时先点开设置。
  *
- * @param sections 该入口下的全部页面，第一个为默认页。
+ * 声明与可见分成两层：[declaredSections] 是该入口应有的页面全集，[sections] 再按当前构建变体的
+ * 能力过滤。两者不合并成一份常量列表，是因为分变体后可见页面会随能力变化，而枚举常量必须在两个
+ * 变体里是同一份定义——把过滤留到读取时做，同一处声明才能同时服务 standard 与 full 两个包。
+ *
+ * @param declaredSections 该入口声明的全部页面，声明顺序的第一项即默认页。
  */
-enum class NezhaTab(@StringRes val titleRes: Int, val sections: List<NezhaSection>) {
+enum class NezhaTab(@StringRes val titleRes: Int, private val declaredSections: List<NezhaSection>) {
     Home(R.string.tab_home, listOf(NezhaSection.Home)),
     Applications(
         R.string.tab_applications,
@@ -41,6 +46,21 @@ enum class NezhaTab(@StringRes val titleRes: Int, val sections: List<NezhaSectio
     Settings(R.string.tab_settings, listOf(NezhaSection.Settings, NezhaSection.PrivacyAudit)),
     ;
 
+    /** 当前变体下该入口真正可见的页面，第一个为默认页。 */
+    val sections: List<NezhaSection>
+        get() = declaredSections.filter { it.isAvailableInCurrentVariant() }
+
     val defaultSection: NezhaSection
         get() = sections.first()
 }
+
+/**
+ * 页面在当前构建变体下是否可用。
+ *
+ * 通知规则页依赖通知监听服务，而 standard 变体不声明该服务（见 `app/build.gradle.kts` 的 capability
+ * 维度）。此时若仍列出入口，用户点进去看到的会是一个永远无法生效的授权开关——按工程规则第 45.3 节，
+ * 这比没有这个入口更有害，因为它会让人以为自己已经被保护。因此把「能力缺失就没有入口」固化成一条
+ * 规则，而不是留给每个界面自己判断。
+ */
+private fun NezhaSection.isAvailableInCurrentVariant(): Boolean =
+    this != NezhaSection.NotificationRules || BuildConfig.NOTIFICATION_INTERCEPTION
