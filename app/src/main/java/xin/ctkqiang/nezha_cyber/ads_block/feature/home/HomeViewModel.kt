@@ -58,6 +58,13 @@ class HomeViewModel(
                 mutableUiState.update { current -> current.copy(latestBlocked = observations.latestBlocked()) }
             }
         }
+        viewModelScope.launch {
+            observationStore.statistics.collect { statistics ->
+                mutableUiState.update { current ->
+                    current.copy(observed = statistics.observed, blocked = statistics.blocked)
+                }
+            }
+        }
     }
 
     fun dispatch(intent: HomeUiIntent) {

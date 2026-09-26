@@ -17,6 +17,8 @@ data class HomeUiState(
     val session: VpnSessionState = VpnSessionState.Stopped,
     val authorizationRequired: Boolean = false,
     val latestBlocked: LatestBlocked? = null,
+    val observed: Long = 0,
+    val blocked: Long = 0,
 )
 
 /**

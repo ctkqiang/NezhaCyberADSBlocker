@@ -89,6 +89,8 @@ private fun ColumnScope.HomeContent(uiState: HomeUiState, onIntent: (HomeUiInten
         )
     }
     Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
+    HomeStatsCard(observed = uiState.observed, blocked = uiState.blocked)
+    Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
     LatestBlockedCard(latest = uiState.latestBlocked)
     Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
     HomeScopeCard()
