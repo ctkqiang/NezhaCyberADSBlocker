@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.LiquidGlassBackdrop
@@ -93,6 +95,7 @@ private fun FloatingNavigationItem(
     modifier: Modifier = Modifier,
 ) {
     val palette = NezhaTheme.palette
+    val hapticFeedback = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val glyphScale by animateFloatAsState(
@@ -107,7 +110,13 @@ private fun FloatingNavigationItem(
                 interactionSource = interactionSource,
                 indication = null,
                 role = Role.Tab,
-                onClick = onClick,
+                // 触感只加在这一处，不在每个页面各加一次：底栏出现在**每一个**页面上，
+                // 因此这一处就让「切换页面」在全应用范围内有触感响应，且只会有一次反馈——
+                // 各页面自己再加，就会变成两次连震。
+                onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                },
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
