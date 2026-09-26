@@ -2,4 +2,6 @@
 <resources>
   <!-- 深色下的窗口底色，与 NezhaPalette 的 darkNezhaPalette.background 保持同值。 -->
   <color name="nezha_window_background">#040507</color>
+  <!-- 深色下的通知强调色，与 darkNezhaPalette.brand 同值。理由见 values/colors.xml。 -->
+  <color name="nezha_notification_accent">#FF2640</color>
 </resources>

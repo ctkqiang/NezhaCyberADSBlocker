@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  拦截通知的**展开态**内容视图。折叠态是 nezha_notification_ad_block.xml。
+
+  与折叠态的唯一职责差别：这里给得出空间，让信息铺开。因此域名不再被截成一行，明细也从
+  「一行来源应用」扩成完整的应用 + 命中规则。
+
+  域名与明细都允许换行，且**只在展开态**放开行数上限：折叠态里放开会让一条长域名撑高整个
+  通知内容区，把下面几条通知顶出屏幕，而用户还没主动要求看它。
+
+  文字颜色不写死、视图种类受限的原因见折叠态布局的说明，两者是同一条约束。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:paddingStart="2dp"
+  android:paddingTop="8dp"
+  android:paddingBottom="8dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <ImageView
+      android:id="@+id/notification_accent_bar"
+      android:layout_width="3dp"
+      android:layout_height="26dp"
+      android:background="@drawable/nezha_notification_accent_bar"
+      android:contentDescription="@null" />
+
+    <ImageView
+      android:id="@+id/notification_icon"
+      android:layout_width="18dp"
+      android:layout_height="18dp"
+      android:layout_marginStart="10dp"
+      android:contentDescription="@null"
+      android:src="@drawable/ic_notification_shield_accent" />
+
+    <TextView
+      android:id="@+id/notification_title"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_weight="1"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textSize="12sp" />
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/notification_headline"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:ellipsize="end"
+    android:maxLines="4"
+    android:textSize="17sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/notification_detail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:ellipsize="end"
+    android:maxLines="5"
+    android:lineSpacingExtra="2dp"
+    android:textSize="13sp" />
+</LinearLayout>

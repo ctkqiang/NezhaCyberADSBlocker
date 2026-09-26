@@ -1,60 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  拦截通知的自定义内容视图。
+  拦截通知的**折叠态**内容视图。展开态是 nezha_notification_ad_block_expanded.xml。
 
-  只使用 RemoteViews 支持的视图：这里出现任何不支持的控件或属性，都会在真机上静默失效
-  ——通知变成空白，而不是报错。因此布局刻意保持成一个横向容器 + 一列文本。
+  两份布局必须分开，而且必须真的不一样。此前两者共用同一份 RemoteViews，导致下拉展开后画面
+  没有任何变化——展开这个手势是用户在通知上最熟悉的交互，做空了整条通知就显得是死的。
+
+  分工：折叠态只回答「拦了什么、是谁在请求」两个问题，因此是一行域名加一行来源应用；明细留给
+  展开态，让展开这个动作有实际回报。
 
   **不写死文字颜色**：Android 12 起系统会按主题强制决定自定义通知里的文字颜色以保证对比度，
-  写死的颜色会被忽略，反而在不同版本上表现不一致。品牌观感交给 `setColor`，
-  文本交给系统——这是唯一在各版本上都稳定的组合。
+  写死的颜色会被忽略，反而在不同版本上表现不一致。品牌观感交给左侧色条与盾牌图标，文本交给
+  系统——这是唯一在各版本与各厂商 ROM 上都稳定的组合。
+
+  视图种类受 RemoteViews 限制：这里只能出现 RemoteViews 支持的控件，用了别的会在真机上静默
+  失效——通知变成空白，而不是报错。因此布局刻意保持成一个横向容器 + 一列文本。
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:gravity="center_vertical"
   android:orientation="horizontal"
-  android:paddingTop="6dp"
-  android:paddingBottom="6dp">
+  android:paddingStart="2dp"
+  android:paddingTop="8dp"
+  android:paddingBottom="8dp">
+
+  <ImageView
+    android:id="@+id/notification_accent_bar"
+    android:layout_width="3dp"
+    android:layout_height="34dp"
+    android:background="@drawable/nezha_notification_accent_bar"
+    android:contentDescription="@null" />
 
   <ImageView
     android:id="@+id/notification_icon"
-    android:layout_width="28dp"
-    android:layout_height="28dp"
-    android:contentDescription="@null" />
+    android:layout_width="22dp"
+    android:layout_height="22dp"
+    android:layout_marginStart="10dp"
+    android:contentDescription="@null"
+    android:src="@drawable/ic_notification_shield_accent" />
 
   <LinearLayout
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
+    android:layout_marginStart="10dp"
     android:layout_weight="1"
     android:orientation="vertical">
-
-    <TextView
-      android:id="@+id/notification_title"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:ellipsize="end"
-      android:maxLines="1"
-      android:textSize="11sp" />
 
     <TextView
       android:id="@+id/notification_headline"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginTop="1dp"
       android:ellipsize="end"
       android:maxLines="1"
       android:textSize="16sp"
       android:textStyle="bold" />
 
     <TextView
-      android:id="@+id/notification_detail"
+      android:id="@+id/notification_summary"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="2dp"
       android:ellipsize="end"
-      android:maxLines="2"
+      android:maxLines="1"
       android:textSize="12sp" />
   </LinearLayout>
 </LinearLayout>

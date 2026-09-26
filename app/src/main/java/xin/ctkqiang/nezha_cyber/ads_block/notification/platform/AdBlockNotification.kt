@@ -52,8 +52,8 @@ internal object AdBlockNotification {
             .setContentTitle(context.getString(R.string.ad_block_title))
             .setContentText(context.getString(R.string.ad_block_text, appLabel, observation.host))
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(contentView(context, observation, appLabel))
-            .setCustomBigContentView(contentView(context, observation, appLabel))
+            .setCustomContentView(collapsedView(context, observation, appLabel))
+            .setCustomBigContentView(expandedView(context, observation, appLabel))
             .setColor(brandColor(context))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
@@ -62,15 +62,30 @@ internal object AdBlockNotification {
     }
 
     /**
-     * 自定义内容视图。
+     * 折叠态内容视图。
+     *
+     * 只承载两个信息：拦下的域名、发起这次请求的应用。应用名必须自己写进内容区——系统装饰区
+     * 显示的是**本应用**的名字（通知由我们发出），不是被拦下的那个应用，而后者才是用户要看的。
+     */
+    private fun collapsedView(context: Context, observation: DomainObservation, appLabel: String): RemoteViews =
+        RemoteViews(context.packageName, R.layout.nezha_notification_ad_block).apply {
+            setTextViewText(R.id.notification_headline, observation.host)
+            setTextViewText(R.id.notification_summary, context.getString(R.string.ad_block_body_app, appLabel))
+        }
+
+    /**
+     * 展开态内容视图。
+     *
+     * 与折叠态分属两份布局、两个 RemoteViews 实例，这是刻意的：此前两者共用同一个实例，
+     * 展开后画面不变，整个下拉手势等于没有回报。域名在这里也才放开行数上限——折叠态放开会把
+     * 内容区撑高，把下面几条通知顶出屏幕，而用户还没主动要求看它。
      *
      * 用 [NotificationCompat.DecoratedCustomViewStyle] 而不是完全自绘：它保留系统的小图标、
-     * 应用名、时间戳与折叠行为，只把内容区换成我们的布局。完全自绘会在不同厂商的系统上
-     * 与系统控件风格脱节，也会丢掉展开/折叠这件用户已经形成习惯的事。
+     * 应用名、时间戳与展开控件，只把内容区换成我们的布局。完全自绘会在不同厂商的系统上
+     * 与系统控件风格脱节，也会让用户失去「这条能展开」的视觉线索。
      */
-    private fun contentView(context: Context, observation: DomainObservation, appLabel: String): RemoteViews =
-        RemoteViews(context.packageName, R.layout.nezha_notification_ad_block).apply {
-            setImageViewResource(R.id.notification_icon, R.drawable.ic_notification_shield)
+    private fun expandedView(context: Context, observation: DomainObservation, appLabel: String): RemoteViews =
+        RemoteViews(context.packageName, R.layout.nezha_notification_ad_block_expanded).apply {
             setTextViewText(R.id.notification_title, context.getString(R.string.ad_block_title))
             setTextViewText(R.id.notification_headline, observation.host)
             setTextViewText(R.id.notification_detail, detailOf(context, observation, appLabel))

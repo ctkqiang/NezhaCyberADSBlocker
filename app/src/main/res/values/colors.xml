@@ -12,4 +12,13 @@
     看不到方形边界。改这个值必须同时改 assets/logo.png，否则两者对不上就会露出方框。
   -->
   <color name="nezha_icon_background">#040507</color>
+  <!--
+    通知内容视图里的品牌强调色。取值与 NezhaPalette.lightNezhaPalette.brand 一致，改一处必须
+    同时改另一处。
+
+    为什么走 values-night 覆盖，而不是像 setColor 那样在 Kotlin 里判断系统明暗：通知布局由
+    系统进程 inflate，Kotlin 那一侧的分支只在重建通知的那一刻求值；资源限定符跟随的是 inflate
+    时的系统配置，语义正好对应「通知该按什么明暗画」。深色取值见 values-night/colors.xml。
+  -->
+  <color name="nezha_notification_accent">#CC1F33</color>
 </resources>

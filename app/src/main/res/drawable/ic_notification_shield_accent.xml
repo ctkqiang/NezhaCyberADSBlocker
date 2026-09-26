@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通知内容视图里的盾牌图标：形状与 ic_notification_shield 完全一致，只把填充色换成品牌色。
+
+  必须与 ic_notification_shield 分开，因为两者的用途要求相反的取值：
+  - ic_notification_shield 供 setSmallIcon 使用，状态栏会把图标当作**剪影**处理，只取 alpha
+    通道，因此必须是纯白，颜色由系统决定；
+  - 本图标供内容视图使用，画在系统按明暗绘制的通知背景上，因此必须自带颜色。
+
+  此前两者共用同一个白色矢量，结果是浅色通知上画白盾牌——不可见。颜色取自
+  @color/nezha_notification_accent，浅色与深色各一份，见 values/ 与 values-night/。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="24"
+  android:viewportHeight="24">
+  <path
+    android:fillColor="@color/nezha_notification_accent"
+    android:pathData="M12,2.6 L19.7,5.9 L19.7,11.8 C19.7,16.6 16.6,19.6 12,21.5 C7.4,19.6 4.3,16.6 4.3,11.8 L4.3,5.9 Z M11.1,15.6 L16.4,9.7 L15.1,8.6 L10.9,13.2 L8.8,11.2 L7.6,12.5 Z" />
+</vector>
