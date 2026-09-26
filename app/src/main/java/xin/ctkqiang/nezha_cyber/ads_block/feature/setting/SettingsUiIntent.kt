@@ -1,5 +1,6 @@
 package xin.ctkqiang.nezha_cyber.ads_block.feature.setting
 
+import xin.ctkqiang.nezha_cyber.ads_block.domain.appearance.ThemePreference
 import xin.ctkqiang.nezha_cyber.ads_block.domain.privacy.BlockedResponseMode
 import xin.ctkqiang.nezha_cyber.ads_block.domain.privacy.ObservationRetention
 
@@ -13,6 +14,8 @@ import xin.ctkqiang.nezha_cyber.ads_block.domain.privacy.ObservationRetention
  * 而这里合并并没有带来任何可读性收益——设置页的状态与意图都很小，分开放反而更好找。
  */
 sealed interface SettingsUiIntent {
+    data class SetThemePreference(val preference: ThemePreference) : SettingsUiIntent
+
     data class SetObservationLoggingEnabled(val enabled: Boolean) : SettingsUiIntent
 
     data class SetObservationRetention(val retention: ObservationRetention) : SettingsUiIntent

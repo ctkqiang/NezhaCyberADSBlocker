@@ -25,6 +25,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaSurfaceCard
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaSwitch
 import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalPrivacyPolicyStore
 import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalRuleStore
+import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalThemePreferenceStore
 import xin.ctkqiang.nezha_cyber.ads_block.ui.data.NezhaDataPreviewHost
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaDimens
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaTheme
@@ -45,8 +46,13 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaThemePreview
 fun SettingsScreen(modifier: Modifier = Modifier) {
     val ruleStore = LocalRuleStore.current
     val privacyPolicyStore = LocalPrivacyPolicyStore.current
+    val themePreferenceStore = LocalThemePreferenceStore.current
     val viewModel: SettingsViewModel = viewModel(
-        factory = SettingsViewModel.factory(ruleStore = ruleStore, privacyPolicyStore = privacyPolicyStore),
+        factory = SettingsViewModel.factory(
+            ruleStore = ruleStore,
+            privacyPolicyStore = privacyPolicyStore,
+            themePreferenceStore = themePreferenceStore,
+        ),
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     SettingsContent(uiState = uiState, onIntent = viewModel::dispatch, modifier = modifier)
@@ -60,6 +66,8 @@ private fun SettingsContent(
 ) {
     val palette = NezhaTheme.palette
     NezhaScreenScaffold(modifier = modifier) {
+        SettingsAppearanceCard(uiState = uiState, onIntent = onIntent)
+        Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
         AboutCard(uiState = uiState)
         Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
         DeveloperCard()
