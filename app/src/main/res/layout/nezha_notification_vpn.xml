@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  隧道常驻通知的内容视图。
+
+  它与拦截通知（nezha_notification_ad_block.xml）用同一套视觉语言：品牌色左条 + 盾牌 +
+  两行文本，差别只在标题字号——这里是前台服务通知，长期挂在通知栏上，占的高度要收着用。
+
+  这份布局没有对应的展开态：隧道通知没有第二层信息可给。只有一条通知时硬凑一个展开态，
+  展开后还是一样内容，就是重犯拦截通知此前那个「下拉等于没回报」的错。
+
+  文字颜色不写死、视图种类受限的原因见拦截通知的布局说明，两者受同一条平台约束。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingStart="2dp"
+  android:paddingTop="8dp"
+  android:paddingBottom="8dp">
+
+  <ImageView
+    android:id="@+id/notification_accent_bar"
+    android:layout_width="3dp"
+    android:layout_height="32dp"
+    android:background="@drawable/nezha_notification_accent_bar"
+    android:contentDescription="@null" />
+
+  <ImageView
+    android:id="@+id/notification_icon"
+    android:layout_width="22dp"
+    android:layout_height="22dp"
+    android:layout_marginStart="10dp"
+    android:contentDescription="@null"
+    android:src="@drawable/ic_notification_shield_accent" />
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+      android:id="@+id/notification_title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textSize="14sp"
+      android:textStyle="bold" />
+
+    <TextView
+      android:id="@+id/notification_text"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textSize="12sp" />
+  </LinearLayout>
+</LinearLayout>
