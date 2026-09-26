@@ -84,6 +84,28 @@ object NezhaDimens {
     val protectionRingSize = 188.dp
     val protectionRingStroke = 10.dp
 
+    /**
+     * 统计页图表的尺寸令牌。
+     *
+     * 三张图各自固定高度，而不是按内容撑开：读数在隧道运行时每秒都在变，若高度随数据变化，
+     * 整页会在用户眼皮底下不停上下跳。
+     */
+    val chartBarHeight = 10.dp
+    val chartBarCornerRadius = 5.dp
+    val chartRowGap = 14.dp
+    val chartLegendDotSize = 10.dp
+    val chartLegendDotCornerRadius = 5.dp
+    val proportionRingSize = 148.dp
+    val proportionRingStroke = 14.dp
+    val proportionRingGap = 20.dp
+    val trendChartHeight = 96.dp
+    val trendBarCornerRadius = 3.dp
+    val trendBarGap = 4.dp
+
+    /** 列表行内的占比条。比图表里的条更细：它是行内的辅助信息，不该抢走行主体的注意力。 */
+    val ratioBarHeight = 6.dp
+    val ratioBarCornerRadius = 3.dp
+
     val primaryButtonHeight = 56.dp
     val primaryButtonCornerRadius = 28.dp
 

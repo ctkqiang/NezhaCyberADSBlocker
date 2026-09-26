@@ -115,7 +115,8 @@
   <string name="statistics_top_note">来自最近观测窗口，不是全量历史。</string>
   <string name="statistics_applications_title">按应用</string>
   <string name="statistics_app_unknown">未知来源</string>
-  <string name="statistics_app_counts">观测 %1$d · 拦截 %2$d · 放行 %3$d</string>
+  <string name="statistics_app_bar_trailing">拦截 %1$d · 观测 %2$d</string>
+  <string name="statistics_app_hosts">高频：%1$s</string>
   <string name="statistics_applications_empty">最近窗口内还没有可归属到应用的观测。</string>
   <string name="statistics_applications_note">来自最近观测窗口，不是全量历史。归属到应用需要系统提供连接归属查询（Android 10 及以上），更低版本的应用一律显示为未知来源。</string>
   <string name="statistics_clear_title">清除统计</string>
@@ -125,6 +126,18 @@
   <string name="statistics_clear_confirm_action">确认清除</string>
   <string name="statistics_clear_cancel_action">取消</string>
   <string name="statistics_logging_disabled_note">记录已关闭：下面的读数停在关闭那一刻，不会继续增长。隧道仍在正常过滤与拦截。</string>
+
+  <!-- 统计页图表：占比环、对比条、趋势柱共用同一组图例与口径说明 -->
+  <string name="statistics_legend_blocked">已拦截</string>
+  <string name="statistics_legend_relayed">已放行</string>
+  <string name="statistics_proportion_title">拦截占比</string>
+  <string name="statistics_proportion_center_caption">累计拦截占比</string>
+  <string name="statistics_percent_value">%1$d%%</string>
+  <string name="statistics_proportion_note">口径为跨会话累计：已拦截 ÷ 已观测。放行不等于用户放行，绝大多数只是没有命中任何规则。</string>
+  <string name="statistics_trend_title">最近窗口的查询趋势</string>
+  <string name="statistics_trend_note">把最近 %1$d 条观测按时间等分为 %2$d 段，从左到右由早到晚；柱高按窗口内的最大值归一，因此不同时刻的图不能直接比高度。它只覆盖内存里保留的这一段，不是历史曲线。</string>
+  <string name="statistics_trend_empty">观测样本太少，还画不出趋势。</string>
+  <string name="statistics_traffic_note">条长按本组的最大值归一，比较的是各应用最近的查询总量，其中品牌色部分是被拦下的部分。</string>
 
   <!-- 应用列表页 -->
   <string name="applications_summary_default">当前未限定应用：所有应用的域名解析都会被接管。选择应用后只接管选中的应用，其余应用不受影响。</string>
