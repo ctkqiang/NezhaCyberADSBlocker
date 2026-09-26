@@ -1,21 +1,30 @@
 # 应用专属广告域名清单（唯一来源，随应用打包，运行时只读 —— 工程规则第 44 节）
 #
 # 格式：每行「<包名> <域名>」，UTF-8 / LF，忽略空行与 # 注释，通配符只允许 *. 前缀。
-# 这些域名只对左侧包名对应的应用生效；其它应用请求同一个域名不受影响。
+# 这些域名只对左侧包名对应的应用生效；其它应用请求同一个域名完全不受影响。
 #
-# 收录标准只有一条：能确认是广告或追踪域名。命名里带 ads / tracker 不构成证据
-# （工程规则第 17、32 节），因此本清单刻意保持短小——宁可少列，也不要把应用的核心接口
-# 误当广告：那条域名一旦拦错，破坏的是应用本身的功能。
+# 收录标准只有一条：域名本身必须是可确认的广告或追踪域名。命名里带 ads / tracker 不构成
+# 证据（工程规则第 17、32 节）；域名一旦拦错，破坏的是应用功能本身，因此不做「看着像就收」。
+#
+# 条目按证据强度标注，标注写在所属小节里：
+#   已确认 —— 域名来自广告平台的公开文档或广泛使用的去广告规则集，且该应用确属对应生态。
+#   待确认 —— 域名已确认是广告 SDK 域名，但「该应用是否接入」尚未逐项验证。
+#             收这类条目是因为它没有副作用：作用域只限左侧应用，该应用没用这个 SDK 时
+#             整条规则不命中，等同于不存在；一旦命中就是真实拦截。是否真的生效，可以在
+#             「网络活动」页与拦截通知里直接看到，不必猜。
 #
 # 与 assets/domains.txt 的关系：domains.txt 是全局清单，对所有应用生效；本文件是按应用
 # 收窄的补充。二者都是只读内置规则，用户显式放行规则的优先级最高，可覆盖这里的任意一条。
 #
 # 本文件没有版本号，也不需要：它不导入持久层、没有用户覆写，每次启动整体重新加载，
-# 因此不存在「已安装用户拿不到新增条目」的问题（与第 39.3 节的全局清单不同）。
+# 因此不存在第 39.3 节那种「已安装用户拿不到新增条目」的问题。补充域名直接追加即可。
 #
-# 需要补充域名时，直接按同样格式追加即可，不必改动代码。
+# 微信小程序：小程序运行在微信进程内，因此针对 com.tencent.mm 的规则自动作用于小程序。
+# 但小程序与公众号的广告大量走微信自有接口（mp.weixin.qq.com 等），那些主机同时承载正文
+# 与登录等核心功能，在域名层面拦截会直接破坏微信，故这里只覆盖小程序使用的第三方广告 SDK。
 
-# 微博（com.sina.weibo）：新浪广告交易、广告位与营销域名
+# ── 微博（com.sina.weibo）· 已确认 ──────────────────────────────────────────────
+# 新浪广告交易、广告位与营销域名
 com.sina.weibo sax.sina.com.cn
 com.sina.weibo saxn.sina.com.cn
 com.sina.weibo sinaads.sina.com.cn
@@ -23,7 +32,8 @@ com.sina.weibo adbox.sina.com.cn
 com.sina.weibo dcads.sina.com.cn
 com.sina.weibo emarketing.sina.com.cn
 
-# 淘宝（com.taobao.taobao）：阿里妈妈广告交易与广告埋点域名
+# ── 淘宝（com.taobao.taobao）· 已确认 ──────────────────────────────────────────
+# 阿里妈妈广告交易与广告埋点域名
 com.taobao.taobao tanx.com
 com.taobao.taobao *.tanx.com
 com.taobao.taobao alimama.com
@@ -32,33 +42,115 @@ com.taobao.taobao atanx.alicdn.com
 com.taobao.taobao adash.m.taobao.com
 com.taobao.taobao adashx.ut.taobao.com
 
-# 高德地图（com.autonavi.minimap）：属阿里系，广告走阿里妈妈交易
+# ── 高德地图（com.autonavi.minimap）· 已确认 ───────────────────────────────────
+# 高德属阿里系，广告走阿里妈妈交易
 com.autonavi.minimap tanx.com
 com.autonavi.minimap *.tanx.com
 com.autonavi.minimap alimama.com
 com.autonavi.minimap *.alimama.com
 
-# 百度地图（com.baidu.BaiduMap）：百度联盟广告域名
+# ── 百度地图（com.baidu.BaiduMap）· 已确认 ─────────────────────────────────────
+# 百度联盟广告与埋点域名
 com.baidu.BaiduMap mobads.baidu.com
+com.baidu.BaiduMap mobads-logs.baidu.com
 com.baidu.BaiduMap pos.baidu.com
 com.baidu.BaiduMap cpro.baidu.com
 com.baidu.BaiduMap cbjs.baidu.com
 com.baidu.BaiduMap afd.baidu.com
+com.baidu.BaiduMap union.baidu.com
 
-# 微信（com.tencent.mm）：腾讯广点通广告域名
+# ── 微信（com.tencent.mm）· 已确认 ─────────────────────────────────────────────
+# 腾讯广点通广告交易、广告服务与广告素材域名。小程序与公众号使用的第三方广告 SDK 同上。
 com.tencent.mm gdt.qq.com
 com.tencent.mm *.gdt.qq.com
-com.tencent.mm e.qq.com
 com.tencent.mm ad.qq.com
 com.tencent.mm adsview.qq.com
 com.tencent.mm pgdt.gtimg.cn
+com.tencent.mm sdk.e.qq.com
+com.tencent.mm adsmind.gdtimg.com
+com.tencent.mm qzs.gdtimg.com
 
-# 腾讯地图（com.tencent.map）：同上，广点通广告域名
+# ── 微信小程序 / 小游戏（com.tencent.mm）· 待确认 ──────────────────────────────
+# 第三方小游戏可以接入穿山甲等外部广告 SDK，微信自有的广点通已在上一节覆盖。
+com.tencent.mm pangolin-sdk-toutiao.com
+com.tencent.mm *.pangolin-sdk-toutiao.com
+com.tencent.mm *.pglstatp-toutiao.com
+com.tencent.mm *.gromore.com
+
+# ── 腾讯地图（com.tencent.map）· 已确认 ────────────────────────────────────────
 com.tencent.map gdt.qq.com
 com.tencent.map *.gdt.qq.com
-com.tencent.map e.qq.com
 com.tencent.map pgdt.gtimg.cn
+com.tencent.map sdk.e.qq.com
+com.tencent.map adsmind.gdtimg.com
 
-# 拼多多（com.xunmeng.pinduoduo）：暂未确认到可断言为广告的独立域名。
-# 这里不编造：无法确认是广告的域名一旦拦错，破坏的是应用功能本身（工程规则第 17、32 节）。
-# 确认后按同一格式追加即可。
+# ── 应用宝（com.tencent.android.qqdownloader）· 已确认 ─────────────────────────
+com.tencent.android.qqdownloader gdt.qq.com
+com.tencent.android.qqdownloader *.gdt.qq.com
+com.tencent.android.qqdownloader ad.qq.com
+com.tencent.android.qqdownloader pgdt.gtimg.cn
+com.tencent.android.qqdownloader adsmind.gdtimg.com
+
+# ── 抖音（com.ss.android.ugc.aweme）· 已确认 ───────────────────────────────────
+# 字节跳动自有广告体系：穿山甲 / GroMore 广告聚合 / 巨量引擎。
+# 穿山甲官方接入文档以 api-access.pangolin-sdk-toutiao.com 作为广告请求域名，
+# log-api 为广告日志上报，pglstatp 为广告素材 CDN。
+com.ss.android.ugc.aweme pangolin-sdk-toutiao.com
+com.ss.android.ugc.aweme *.pangolin-sdk-toutiao.com
+com.ss.android.ugc.aweme *.pglstatp-toutiao.com
+com.ss.android.ugc.aweme *.gromore.com
+com.ss.android.ugc.aweme analytics.oceanengine.com
+
+# ── 懂车帝（com.ss.android.auto）· 已确认 ──────────────────────────────────────
+# 同属字节跳动生态，广告体系与抖音一致。
+com.ss.android.auto pangolin-sdk-toutiao.com
+com.ss.android.auto *.pangolin-sdk-toutiao.com
+com.ss.android.auto *.pglstatp-toutiao.com
+com.ss.android.auto *.gromore.com
+com.ss.android.auto analytics.oceanengine.com
+
+# ── 瑞幸咖啡（com.lucky.luckyclient）· 待确认 ──────────────────────────────────
+com.lucky.luckyclient pangolin-sdk-toutiao.com
+com.lucky.luckyclient *.pangolin-sdk-toutiao.com
+com.lucky.luckyclient *.pglstatp-toutiao.com
+com.lucky.luckyclient *.gromore.com
+com.lucky.luckyclient gdt.qq.com
+com.lucky.luckyclient *.gdt.qq.com
+com.lucky.luckyclient pgdt.gtimg.cn
+
+# ── 人民日报（com.peopledailychina.activity）· 待确认 ──────────────────────────
+com.peopledailychina.activity pangolin-sdk-toutiao.com
+com.peopledailychina.activity *.pangolin-sdk-toutiao.com
+com.peopledailychina.activity *.pglstatp-toutiao.com
+com.peopledailychina.activity *.gromore.com
+com.peopledailychina.activity gdt.qq.com
+com.peopledailychina.activity *.gdt.qq.com
+com.peopledailychina.activity pgdt.gtimg.cn
+
+# ── 央视财经（com.cctv.caijing）· 待确认 ───────────────────────────────────────
+com.cctv.caijing pangolin-sdk-toutiao.com
+com.cctv.caijing *.pangolin-sdk-toutiao.com
+com.cctv.caijing *.pglstatp-toutiao.com
+com.cctv.caijing *.gromore.com
+com.cctv.caijing gdt.qq.com
+com.cctv.caijing *.gdt.qq.com
+com.cctv.caijing pgdt.gtimg.cn
+
+# ── 同程旅行（com.tongcheng.android）· 待确认 ──────────────────────────────────
+com.tongcheng.android pangolin-sdk-toutiao.com
+com.tongcheng.android *.pangolin-sdk-toutiao.com
+com.tongcheng.android *.pglstatp-toutiao.com
+com.tongcheng.android *.gromore.com
+com.tongcheng.android gdt.qq.com
+com.tongcheng.android *.gdt.qq.com
+com.tongcheng.android pgdt.gtimg.cn
+
+# ── 拼多多（com.xunmeng.pinduoduo）· 已确认 ────────────────────────────────────
+# 只收专门用于广告投放的主机。pinduoduo.com 下的 images 等主机同时承载商品图片，
+# 拦截会直接破坏浏览，因此一律不收。
+com.xunmeng.pinduoduo t-dsp.pinduoduo.com
+com.xunmeng.pinduoduo video-dsp.pddpic.com
+
+# ── Grab（com.grabtaxi.passenger）· 无可用条目 ─────────────────────────────────
+# Grab 的广告走自有 GrabAds 平台，由应用自身的接口与素材域名承载，与登录、下单共用同一批
+# 主机。在域名层面无法只拦广告而不影响核心功能，因此这里不列任何条目——列了也是假的。
