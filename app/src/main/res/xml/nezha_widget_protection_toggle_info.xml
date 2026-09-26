@@ -5,6 +5,7 @@
   除此之外还会在三个时机刷新——被添加到桌面、设备重启、以及应用内的变化通过定向广播进来。
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:previewLayout="@layout/nezha_widget_preview"
   android:description="@string/widget_protection_toggle_description"
   android:initialLayout="@layout/nezha_widget_toggle"
   android:minHeight="110dp"

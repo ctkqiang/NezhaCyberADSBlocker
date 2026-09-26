@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  小组件在选择器里的预览图。
+
+  为什么需要单独一份：没有 previewLayout 也没有 previewImage 时，桌面会**退回显示应用图标**——
+  选择器里十个小组件全是一张 logo，用户根本无法判断要加哪一个。这正是此前的问题。
+
+  为什么十种共用一份：预览的用途是「让人认得出这是本应用的卡片」，不是精确还原每一种版式；
+  为十种各做一份预览，等于多维护十份只在选择器里出现一次的布局。精确区分交给 description。
+
+  里面的文字取自 strings 里 translatable="false" 的占位串：布局里不能写死用户可见文本
+  （工程规则第 42.4 节），而预览又必须是真实文字——tools:text 会在构建时被剥掉，预览就是空的。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/nezha_widget_background_light"
+  android:gravity="center_vertical"
+  android:orientation="vertical"
+  android:padding="14dp">
+
+  <TextView
+    android:id="@+id/widget_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:text="@string/widget_preview_title"
+    android:textSize="11sp" />
+
+  <TextView
+    android:id="@+id/widget_value"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:ellipsize="end"
+    android:includeFontPadding="false"
+    android:maxLines="1"
+    android:text="@string/widget_preview_value"
+    android:textSize="28sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/widget_detail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:ellipsize="end"
+    android:maxLines="2"
+    android:text="@string/widget_preview_detail"
+    android:textSize="11sp" />
+</LinearLayout>

@@ -103,6 +103,13 @@
   <string name="widget_overview_description">把开关状态与累计拦截数放在一张卡上。只想放一个小组件时用它。</string>
 
   <string name="widget_status_running">保护已开启</string>
+  <!--
+    小组件在选择器里的预览占位文字。translatable="false"：它们是版式示意，不是要翻译的界面文案，
+    所以这里给出的就是各语言下都会显示的固定内容。
+  -->
+  <string name="widget_preview_title" translatable="false">最近拦截</string>
+  <string name="widget_preview_value" translatable="false">1,248</string>
+  <string name="widget_preview_detail" translatable="false">来自 示例应用 · 内置清单</string>
   <string name="widget_status_transitioning">正在切换</string>
   <string name="widget_status_stopped">保护已停止</string>
   <string name="widget_status_failed">启动失败</string>
