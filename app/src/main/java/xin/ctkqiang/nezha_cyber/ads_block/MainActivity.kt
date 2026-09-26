@@ -38,7 +38,9 @@ class MainActivity : ComponentActivity() {
                     VpnCompositionRoot(vpnController = vpnController) {
                         AnalysisCompositionRoot {
                             NotificationCompositionRoot {
-                                NezhaNavigationShell()
+                                PrivacyCompositionRoot {
+                                    NezhaNavigationShell()
+                                }
                             }
                         }
                     }

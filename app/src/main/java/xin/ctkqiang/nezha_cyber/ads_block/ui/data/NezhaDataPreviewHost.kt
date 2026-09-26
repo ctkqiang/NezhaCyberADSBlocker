@@ -45,6 +45,8 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.application.ApplicationIconLoader
 import xin.ctkqiang.nezha_cyber.ads_block.ui.application.LocalApplicationIconLoader
 import xin.ctkqiang.nezha_cyber.ads_block.ui.notification.LocalNotificationAccessLauncher
 import xin.ctkqiang.nezha_cyber.ads_block.ui.notification.NotificationAccessLauncher
+import xin.ctkqiang.nezha_cyber.ads_block.ui.privacy.LocalSystemSettingsLauncher
+import xin.ctkqiang.nezha_cyber.ads_block.ui.privacy.SystemSettingsLauncher
 
 /**
  * 数据端口的预览装配壳。
@@ -76,6 +78,7 @@ internal fun NezhaDataPreviewHost(
         LocalNotificationRuleStore provides PreviewNotificationRuleStore(),
         LocalNotificationAccessSource provides PreviewNotificationAccessSource(isNotificationAccessGranted),
         LocalNotificationAccessLauncher provides PreviewNotificationAccessLauncher(),
+        LocalSystemSettingsLauncher provides PreviewSystemSettingsLauncher(),
         LocalApkAnalyzer provides PreviewApkAnalyzer(),
         LocalApplicationIconLoader provides PreviewApplicationIconLoader(),
         content = content,
@@ -137,6 +140,22 @@ private class PreviewNotificationAccessSource(isGranted: Boolean) : Notification
 /** 预览用的设置页跳转。预览环境里没有系统设置，因此什么都不做——但它必须存在，否则预览会崩。 */
 private class PreviewNotificationAccessLauncher : NotificationAccessLauncher {
     override fun launch() = Unit
+}
+
+/**
+ * 预览用的系统隐私设置跳转。
+ *
+ * [canOpenPrivacyDashboard] 默认给 true，这样预览里看到的是带按钮的那一版；它决定了
+ * 「打开隐私仪表盘」是按可用按钮呈现还是替换成一行说明，两种排版都需要能看到。
+ */
+private class PreviewSystemSettingsLauncher(dashboardAvailable: Boolean = true) : SystemSettingsLauncher {
+    override val canOpenPrivacyDashboard: Boolean = dashboardAvailable
+
+    override fun openApplicationSettings(packageName: String) = Unit
+
+    override fun openPrivacyDashboard() = Unit
+
+    override fun openDeveloperOptions() = Unit
 }
 
 /**

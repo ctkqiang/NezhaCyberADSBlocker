@@ -24,6 +24,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.feature.application.ApplicationsScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.home.HomeScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.network.NetworkActivityScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.notification.NotificationRulesScreen
+import xin.ctkqiang.nezha_cyber.ads_block.feature.privacy.PrivacyAuditScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.rule.AllowlistScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.rule.BlocklistScreen
 import xin.ctkqiang.nezha_cyber.ads_block.feature.setting.SettingsScreen
@@ -163,5 +164,6 @@ private fun NezhaSectionHost(
         NezhaSection.NotificationRules -> NotificationRulesScreen(modifier = modifier)
         NezhaSection.Statistics -> StatisticsScreen(modifier = modifier)
         NezhaSection.Settings -> SettingsScreen(modifier = modifier)
+        NezhaSection.PrivacyAudit -> PrivacyAuditScreen(modifier = modifier)
     }
 }

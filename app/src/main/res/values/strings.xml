@@ -19,6 +19,7 @@
   <string name="section_statistics">统计</string>
   <string name="section_network_activity">网络活动</string>
   <string name="section_settings">设置</string>
+  <string name="section_privacy_audit">隐私与传感器</string>
 
   <!-- 常驻通知。隧道运行时用户必须能看见状态，并能不打开应用就断开 -->
   <string name="vpn_notification_channel_name">隧道运行状态</string>
@@ -200,6 +201,25 @@
   <string name="settings_blocked_response_zero">0.0.0.0</string>
   <string name="settings_blocked_response_note">三种都在本机合成、都不向上游发起查询，因此都不会把访问意图泄露给解析服务。它们的区别在于客户端怎么理解这次失败：域名不存在最标准；拒绝解析说的是「我不做这件事」；0.0.0.0 是「解析成功但地址不可用」，连接会立刻失败。不同应用的反应并不一致，挑一个顺手的即可。</string>
   <string name="settings_permission_boundary_note">本应用无法修改其它应用的权限。Android 只允许设备所有者或资料所有者改动授权状态，普通安装的应用没有这个能力，因此这里不提供那个入口。权限清单可以在「应用 → 应用详情」里查看。</string>
+
+  <!-- 隐私与传感器页：敏感权限审计 + 系统传感器开关的引导 -->
+  <string name="privacy_audit_scanning">正在读取已安装应用的权限…</string>
+  <string name="privacy_audit_summary">已扫描 %1$d 个应用，其中 %2$d 个当前持有敏感权限</string>
+  <string name="privacy_audit_rescan">重新扫描</string>
+  <string name="privacy_audit_boundary_title">为什么这里没有「关闭陀螺仪」的开关</string>
+  <string name="privacy_audit_boundary_note">陀螺仪与加速度计没有对应的 Android 权限，因此任何应用都无法关闭或撤销它们——不是本应用没做，而是平台没有提供这个能力。能撤销的只有下面这些需要用户授权的权限，而撤销只能由你在系统设置里完成：Android 不允许普通应用改动其它应用的授权状态。</string>
+  <string name="privacy_audit_dashboard_action">打开隐私仪表盘</string>
+  <string name="privacy_audit_dashboard_unavailable">本机系统版本不提供隐私仪表盘（需要 Android 12 及以上）。</string>
+  <string name="privacy_sensors_title">关闭传感器（陀螺仪、相机、麦克风）</string>
+  <string name="privacy_sensors_note">系统自带一个「传感器已关闭」快捷开关（Android 10 起）。打开后所有应用的相机、麦克风与运动传感器都会停止工作，这是唯一能真正停掉陀螺仪的办法。开启路径：设置 → 系统 → 开发者选项 → 快捷设置开发者选项 → 打开「传感器已关闭」，然后在快捷设置面板里点它。列表里看不到开发者选项时，先在「关于手机」里连续点七次「版本号」。</string>
+  <string name="privacy_sensors_open_developer_options">打开开发者选项</string>
+  <string name="privacy_audit_no_visibility">当前没有「查询所有应用」权限，读不到完整的应用列表，因此下面的结果是不完整的。请在系统设置里授予该权限后重新扫描。</string>
+  <string name="privacy_audit_unreadable">另有 %1$d 个应用的权限信息不可读（可能已卸载或对本应用不可见），它们未计入上面的结果。</string>
+  <string name="privacy_audit_row_permissions">当前持有 %1$d 项敏感权限</string>
+  <string name="privacy_audit_row_action">前往系统设置</string>
+  <string name="privacy_audit_permission_separator">、</string>
+  <string name="privacy_audit_empty">没有读到任何已获得敏感权限的应用。只有当应用真的被授予了位置、相机、麦克风这类权限时，它才会出现在这里。</string>
+  <string name="privacy_audit_empty_tag">无需处理</string>
 
   <!-- 通知拦截：权限、规则列表、编辑器、替代通知的文案 -->
   <string name="notification_service_label">哪吒反广通知拦截</string>
