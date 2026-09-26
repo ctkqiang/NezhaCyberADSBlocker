@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  拦截通知的自定义内容视图。
+
+  只使用 RemoteViews 支持的视图：这里出现任何不支持的控件或属性，都会在真机上静默失效
+  ——通知变成空白，而不是报错。因此布局刻意保持成一个横向容器 + 一列文本。
+
+  **不写死文字颜色**：Android 12 起系统会按主题强制决定自定义通知里的文字颜色以保证对比度，
+  写死的颜色会被忽略，反而在不同版本上表现不一致。品牌观感交给 `setColor`，
+  文本交给系统——这是唯一在各版本上都稳定的组合。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingTop="6dp"
+  android:paddingBottom="6dp">
+
+  <ImageView
+    android:id="@+id/notification_icon"
+    android:layout_width="28dp"
+    android:layout_height="28dp"
+    android:contentDescription="@null" />
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+      android:id="@+id/notification_title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textSize="11sp" />
+
+    <TextView
+      android:id="@+id/notification_headline"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="1dp"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textSize="16sp"
+      android:textStyle="bold" />
+
+    <TextView
+      android:id="@+id/notification_detail"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textSize="12sp" />
+  </LinearLayout>
+</LinearLayout>

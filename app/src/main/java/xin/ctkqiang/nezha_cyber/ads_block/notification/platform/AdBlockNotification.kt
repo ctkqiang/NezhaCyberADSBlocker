@@ -6,10 +6,15 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.widget.RemoteViews
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import xin.ctkqiang.nezha_cyber.ads_block.R
 import xin.ctkqiang.nezha_cyber.ads_block.domain.observation.DomainObservation
 import xin.ctkqiang.nezha_cyber.ads_block.domain.rule.RuleSource
+import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.darkNezhaPalette
+import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.lightNezhaPalette
 
 private const val CHANNEL_ID = "ad_blocks"
 
@@ -46,15 +51,49 @@ internal object AdBlockNotification {
             .setSmallIcon(R.drawable.ic_notification_shield)
             .setContentTitle(context.getString(R.string.ad_block_title))
             .setContentText(context.getString(R.string.ad_block_text, appLabel, observation.host))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(bodyOf(context, observation, appLabel)))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(contentView(context, observation, appLabel))
+            .setCustomBigContentView(contentView(context, observation, appLabel))
+            .setColor(brandColor(context))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
         contentIntent(context)?.let(builder::setContentIntent)
         return builder.build()
     }
 
-    private fun bodyOf(context: Context, observation: DomainObservation, appLabel: String): String = listOfNotNull(
-        context.getString(R.string.ad_block_body_domain, observation.host),
+    /**
+     * 自定义内容视图。
+     *
+     * 用 [NotificationCompat.DecoratedCustomViewStyle] 而不是完全自绘：它保留系统的小图标、
+     * 应用名、时间戳与折叠行为，只把内容区换成我们的布局。完全自绘会在不同厂商的系统上
+     * 与系统控件风格脱节，也会丢掉展开/折叠这件用户已经形成习惯的事。
+     */
+    private fun contentView(context: Context, observation: DomainObservation, appLabel: String): RemoteViews =
+        RemoteViews(context.packageName, R.layout.nezha_notification_ad_block).apply {
+            setImageViewResource(R.id.notification_icon, R.drawable.ic_notification_shield)
+            setTextViewText(R.id.notification_title, context.getString(R.string.ad_block_title))
+            setTextViewText(R.id.notification_headline, observation.host)
+            setTextViewText(R.id.notification_detail, detailOf(context, observation, appLabel))
+        }
+
+    /**
+     * 品牌强调色。
+     *
+     * 取的是**系统**明暗下的品牌红，不是应用主题偏好下的：通知的背景由系统按系统明暗绘制，
+     * 用应用偏好去选色会在「应用锁深色、系统浅色」时把深色主题的亮红压在浅色通知上。
+     */
+    private fun brandColor(context: Context): Int {
+        val isSystemDark = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
+        return if (isSystemDark) darkNezhaPalette.brand.toArgb() else lightNezhaPalette.brand.toArgb()
+    }
+
+    /**
+     * 展开后的明细。
+     *
+     * 不再重复域名：域名已经是大字标题，明细里再来一行「域名：……」是同一件事说两遍。
+     */
+    private fun detailOf(context: Context, observation: DomainObservation, appLabel: String): String = listOfNotNull(
         context.getString(R.string.ad_block_body_app, appLabel),
         observation.matchedRule?.let { matched ->
             context.getString(R.string.ad_block_body_rule, reasonOf(context, observation.source, matched))
