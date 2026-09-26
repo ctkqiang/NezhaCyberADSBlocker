@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  自适应图标的前景层：把方形 logo 收进安全区。
+
+  自适应图标的画布是 108dp，系统只保证中央 66dp 圆内的内容不被裁掉，各厂商的遮罩还会更激进
+  （圆形、圆角方形、水滴形）。logo 本身是满幅方图，直接当前景会被裁掉四条边，因此这里按比例
+  内缩，让图形整体落在安全区内。
+
+  比例取 16%：logo 占画布 68%，其图形本身再占约 90%，折算约 61dp，落在 66dp 的安全圆内。
+  底色层用的是与 logo 自身背景一致的近黑色，因此内缩留下的一圈与底色无缝衔接，
+  不会出现「方图贴在圆底上」的观感（见 values/colors.xml 的 nezha_icon_background）。
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+  android:drawable="@drawable/ic_launcher_logo"
+  android:insetLeft="16%"
+  android:insetTop="16%"
+  android:insetRight="16%"
+  android:insetBottom="16%" />

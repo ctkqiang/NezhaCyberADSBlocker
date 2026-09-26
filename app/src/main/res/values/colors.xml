@@ -2,4 +2,9 @@
 <resources>
   <color name="nezha_red">#C62828</color>
   <color name="nezha_window_background">#FFFFFF</color>
+  <!--
+    图标底色。取值与 logo 自身的背景一致，因此前景内缩后留下的那一圈与底色连成一片，
+    看不到方形边界。改这个值必须同时改 assets/logo.png，否则两者对不上就会露出方框。
+  -->
+  <color name="nezha_icon_background">#040507</color>
 </resources>
