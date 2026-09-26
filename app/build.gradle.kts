@@ -36,6 +36,33 @@ android {
     }
 
     /**
+     * 能力维度：按「能否被任意来源侧载安装」切分。
+     *
+     * Google Play Protect 对**互联网来源侧载**（浏览器、聊天工具、文件管理器下载的）APK 有一份
+     * 自动拦截清单，声明其中任一权限即被直接拒绝安装，`BIND_NOTIFICATION_LISTENER_SERVICE`
+     * 正在清单内。本应用的通知拦截必须声明该权限，于是整包被一并拦下。
+     *
+     * 关键点：这份拦截**只看 manifest 声明，与 APK 内存在哪些类无关**。因此这里只分两个变体、
+     * 由清单决定差异，不改动任何源代码——standard 变体不声明该 service，full 变体保留。
+     * 过滤引擎、规则资产与十个小组件在两个变体里共用同一份实现，避免核心逻辑承担分叉风险。
+     */
+    flavorDimensions += "capability"
+
+    productFlavors {
+        // 侧载友好变体：不含通知监听组件，不会命中 Play Protect 的拦截清单。
+        create("standard") {
+            dimension = "capability"
+            buildConfigField("boolean", "NOTIFICATION_INTERCEPTION", "false")
+        }
+
+        // 完整变体：保留通知拦截。从浏览器等来源安装时需先关闭「Play 保护机制」，否则同样被拦。
+        create("full") {
+            dimension = "capability"
+            buildConfigField("boolean", "NOTIFICATION_INTERCEPTION", "true")
+        }
+    }
+
+    /**
      * Release 签名配置。
      *
      * 密钥库路径与口令只从 `local.properties`（本机）或环境变量（CI）读取，绝不硬编码进构建脚本：
