@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import xin.ctkqiang.nezha_cyber.ads_block.R
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.InstalledApplicationSource
@@ -31,6 +32,10 @@ private const val MAX_ORIGINAL_TEXT_LENGTH = 500
  *
  * 替代通知挂在低重要度频道上：原通知发布时已经提醒过一次，替代通知再响一次等于对同一条通知
  * 打扰两遍。低重要度不发声、不弹横幅，但通知栏里看得见，符合「标记」而不是「再轰炸一次」。
+ *
+ * 内容区用自定义视图（nezha_notification_blocked.xml），与广告拦截通知共用同一套品牌语言。
+ * 它此前用的是系统的 BigTextStyle 模板：版式完全由系统决定，各厂商画出来的样子都不一样，而且
+ * 没有位置放应用图标——同一个应用发出的通知在通知栏里长成两副面孔，用户会以为是两个应用发的。
  */
 internal class BlockedNotificationPoster(
     private val context: Context,
@@ -55,12 +60,25 @@ internal class BlockedNotificationPoster(
             .setSmallIcon(R.drawable.ic_notification_shield)
             .setContentTitle(context.getString(R.string.notification_blocked_title))
             .setContentText(context.getString(R.string.notification_blocked_original_app, appLabel))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(bodyOf(blocked = blocked, appLabel = appLabel)))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomContentView(contentView(blocked = blocked, appLabel = appLabel))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
         launchIntent()?.let { intent -> builder.setContentIntent(intent) }
         return builder.build()
     }
+
+    /**
+     * 内容视图。
+     *
+     * 正文仍走 [bodyOf]，与之前用 BigTextStyle 时是同一份内容——换的只是承载它的版式，不是信息。
+     * 布局里不放任何文案，标题与正文都由这里从字符串资源取（工程规则第 42.4 节）。
+     */
+    private fun contentView(blocked: BlockedNotification, appLabel: String): RemoteViews =
+        RemoteViews(context.packageName, R.layout.nezha_notification_blocked).apply {
+            setTextViewText(R.id.notification_title, context.getString(R.string.notification_blocked_title))
+            setTextViewText(R.id.notification_body, bodyOf(blocked = blocked, appLabel = appLabel))
+        }
 
     private fun bodyOf(blocked: BlockedNotification, appLabel: String): String = listOf(
         context.getString(R.string.notification_blocked_original_app, appLabel),

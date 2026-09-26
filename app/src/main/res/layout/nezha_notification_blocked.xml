@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  拦截通知的**展开态**内容视图。折叠态是 nezha_notification_ad_block.xml。
+  「已被拦截的通知」替代通知的内容视图。
 
-  与折叠态的唯一职责差别：这里给得出空间，让信息铺开。因此域名不再被截成一行，明细也从
-  「一行来源应用」扩成完整的应用 + 命中规则。
+  它与另外两条通知（nezha_notification_ad_block.xml / nezha_notification_vpn.xml）用同一套
+  视觉语言：品牌色左条 + 应用图标 + 文本。三条通知出自同一个应用，就必须长得像同一个应用发的。
 
-  域名与明细都允许换行，且**只在展开态**放开行数上限：折叠态里放开会让一条长域名撑高整个
-  通知内容区，把下面几条通知顶出屏幕，而用户还没主动要求看它。
+  与广告拦截通知的展开态结构相同，只是这里没有折叠/展开之分：原通知的正文本身就是这条通知要
+  传达的全部内容，藏起来再让用户下拉展开，等于把唯一的信息加了一道门。
 
-  文字颜色不写死、视图种类受限的原因见折叠态布局的说明，两者是同一条约束。
+  应用图标用 logo 而不是状态栏那个盾牌：setSmallIcon 的图必须是单色剪影（系统只取 alpha 通道），
+  彩色图会被画成一团白块，因此彩色位图只能出现在内容区。详见广告拦截通知布局的说明。
+
+  文字颜色不写死、视图种类受限的原因见广告拦截通知的布局说明，三者受同一条平台约束。
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
@@ -52,22 +55,12 @@
   </LinearLayout>
 
   <TextView
-    android:id="@+id/notification_headline"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="10dp"
-    android:ellipsize="end"
-    android:maxLines="4"
-    android:textSize="17sp"
-    android:textStyle="bold" />
-
-  <TextView
-    android:id="@+id/notification_detail"
+    android:id="@+id/notification_body"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
     android:ellipsize="end"
-    android:maxLines="5"
     android:lineSpacingExtra="2dp"
+    android:maxLines="8"
     android:textSize="13sp" />
 </LinearLayout>

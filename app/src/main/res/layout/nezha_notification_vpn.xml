@@ -2,7 +2,7 @@
 <!--
   隧道常驻通知的内容视图。
 
-  它与拦截通知（nezha_notification_ad_block.xml）用同一套视觉语言：品牌色左条 + 盾牌 +
+  它与拦截通知（nezha_notification_ad_block.xml）用同一套视觉语言：品牌色左条 + 应用 logo +
   两行文本，差别只在标题字号——这里是前台服务通知，长期挂在通知栏上，占的高度要收着用。
 
   这份布局没有对应的展开态：隧道通知没有第二层信息可给。只有一条通知时硬凑一个展开态，
@@ -22,17 +22,18 @@
   <ImageView
     android:id="@+id/notification_accent_bar"
     android:layout_width="3dp"
-    android:layout_height="32dp"
+    android:layout_height="40dp"
     android:background="@drawable/nezha_notification_accent_bar"
     android:contentDescription="@null" />
 
   <ImageView
     android:id="@+id/notification_icon"
-    android:layout_width="22dp"
-    android:layout_height="22dp"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
     android:layout_marginStart="10dp"
     android:contentDescription="@null"
-    android:src="@drawable/ic_notification_shield_accent" />
+    android:scaleType="fitCenter"
+    android:src="@drawable/ic_launcher_logo" />
 
   <LinearLayout
     android:layout_width="0dp"

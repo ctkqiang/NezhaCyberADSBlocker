@@ -9,8 +9,15 @@
   展开态，让展开这个动作有实际回报。
 
   **不写死文字颜色**：Android 12 起系统会按主题强制决定自定义通知里的文字颜色以保证对比度，
-  写死的颜色会被忽略，反而在不同版本上表现不一致。品牌观感交给左侧色条与盾牌图标，文本交给
+  写死的颜色会被忽略，反而在不同版本上表现不一致。品牌观感交给左侧色条与应用图标，文本交给
   系统——这是唯一在各版本与各厂商 ROM 上都稳定的组合。
+
+  图标用应用自己的 logo，不用状态栏那个盾牌。原因是两者的平台要求不同：`setSmallIcon` 的图
+  必须是单色剪影（系统只取 alpha 通道，彩色图会画成一团白块），所以状态栏只能留盾牌；而内容区
+  是彩色位图能正常显示的地方，放 logo 才能让用户一眼认出这条通知来自哪个应用。
+
+  尺寸取 36dp：logo 是满幅方图，其图形本身又只占约九成，缩到 22dp 就糊成一团认不出了。
+  它比左边的色条高，因此色条也跟着放长，两者等高才不会看成两个错位的元素。
 
   视图种类受 RemoteViews 限制：这里只能出现 RemoteViews 支持的控件，用了别的会在真机上静默
   失效——通知变成空白，而不是报错。因此布局刻意保持成一个横向容器 + 一列文本。
@@ -27,17 +34,18 @@
   <ImageView
     android:id="@+id/notification_accent_bar"
     android:layout_width="3dp"
-    android:layout_height="34dp"
+    android:layout_height="40dp"
     android:background="@drawable/nezha_notification_accent_bar"
     android:contentDescription="@null" />
 
   <ImageView
     android:id="@+id/notification_icon"
-    android:layout_width="22dp"
-    android:layout_height="22dp"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
     android:layout_marginStart="10dp"
     android:contentDescription="@null"
-    android:src="@drawable/ic_notification_shield_accent" />
+    android:scaleType="fitCenter"
+    android:src="@drawable/ic_launcher_logo" />
 
   <LinearLayout
     android:layout_width="0dp"

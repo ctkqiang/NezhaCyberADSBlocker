@@ -6,8 +6,8 @@
   自定义内容视图里文字的颜色以保证对比度，写死的文字色会被忽略。一旦自己铺底色，就再也无法
   保证压在上面的文字是什么颜色——深色模式下浅底配浅字就是不可读。
 
-  色块的取值不受这条限制（被强制的只有文字色），因此品牌观感全部由它和 ic_notification_shield_accent
-  承担，文字一律交给系统。这是在各版本与各厂商 ROM 上都稳定的组合。
+  色块的取值不受这条限制（被强制的只有文字色），因此品牌观感全部由它和应用 logo 承担，
+  文字一律交给系统。这是在各版本与各厂商 ROM 上都稳定的组合。
 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
   android:shape="rectangle">
