@@ -158,3 +158,25 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
 }
+
+/**
+ * 本地安装入口：`./gradlew installDebug`。
+ *
+ * 加了 `capability` 维度之后「debug」不再是一个变体而是两个，Gradle 于是拒绝为 `installDebug`
+ * 猜目标——它按驼峰拆词匹配，`installStandardDebug`、`installFullDebug` 与两个 androidTest 变体
+ * 全都命中，四个候选无法裁决。这里补回一个精确同名的任务，精确匹配优先于模式匹配，
+ * 命令因此重新可用。
+ *
+ * 指向 full 而不是 standard：不加限定词时应当拿到功能最全的那个包，这与加维度之前
+ * `installDebug` 装的是「当时唯一那个 debug 包」是同一个语义。调试包走 ADB 安装，而 ADB
+ * 不属于「互联网来源侧载」，Play Protect 不会拦它，因此 full 在本地安装没有额外风险。
+ *
+ * 要装另一个变体必须写明：`./gradlew installStandardDebug`。刻意不做成二选一自动判断——
+ * 两个变体的差别是通知监听的权限声明，装错了会得到「功能怎么没了」的困惑，
+ * 而安装日志里出现的 APK 名（app-full-debug.apk / app-standard-debug.apk）会如实说明装的是哪个。
+ */
+tasks.register("installDebug") {
+    group = "install"
+    description = "安装 fullDebug 调试包，等价于 installFullDebug。要装 standard 请用 installStandardDebug"
+    dependsOn("installFullDebug")
+}
