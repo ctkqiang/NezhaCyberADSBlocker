@@ -209,8 +209,8 @@ class NezhaVpnService : VpnService() {
         relay = dnsRelay
         isRunning = true
         relayJob = serviceScope.launch { dnsRelay.runWhile { isRunning } }
-        // 拦截通知跑在独立协程里：中继线程只负责把结果塞进去，发布节奏由这里控制。
-        notifierJob = serviceScope.launch { adBlockNotifier.runWhile { isRunning } }
+        // 每拦下一条就发一条通知，因此这里只负责消费队列：中继线程只做一次入队，不做任何发布。
+        notifierJob = serviceScope.launch { adBlockNotifier.run() }
         return true
     }
 
