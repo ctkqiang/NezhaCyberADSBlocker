@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis 取 1800000（30 分钟），这是平台允许的最小值，也是唯一推荐的刷新方式：
+  更频繁的更新会被系统直接忽略，想做更勤只能上 AlarmManager，那会真的耗电。
+  除此之外还会在三个时机刷新——被添加到桌面、设备重启、以及应用内的变化通过定向广播进来。
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+  android:description="@string/widget_protection_toggle_description"
+  android:initialLayout="@layout/nezha_widget_toggle"
+  android:minHeight="110dp"
+  android:minWidth="110dp"
+  android:resizeMode="horizontal|vertical"
+  android:updatePeriodMillis="1800000"
+  android:widgetCategory="home_screen" />

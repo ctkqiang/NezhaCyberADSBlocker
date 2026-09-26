@@ -57,6 +57,58 @@
   <string name="home_latest_blocked_app">来自 %1$s</string>
   <string name="home_latest_blocked_note">只显示最近一条，完整流水在「应用 → 网络活动」。</string>
 
+  <!--
+    桌面小组件。每种都有一份 label（选择器里的名字）与一份 description（说明用途）：
+    十种里有四种共用同一份布局，预览长得像，因此说明文字是用户区分它们的唯一依据。
+    label 用词尽量短，选择器里的位置有限。
+  -->
+  <string name="widget_protection_toggle_label">保护开关</string>
+  <string name="widget_protection_toggle_description">显示当前是否正在保护，并在桌面上直接开启或停止。授权未完成时会打开应用让你完成授权。</string>
+
+  <string name="widget_blocked_count_label">拦截计数</string>
+  <string name="widget_blocked_count_description">累计拦下的请求数，附被拦域名的种类数。数字是跨会话累计，不是本次会话。</string>
+  <string name="widget_blocked_count_detail">涉及 %1$d 个域名</string>
+
+  <string name="widget_blocked_ratio_label">拦截占比</string>
+  <string name="widget_blocked_ratio_description">拦下的请求占全部已观测请求的比例，用一条段落条表示。</string>
+  <string name="widget_ratio_blocked">已拦截 %1$d</string>
+  <string name="widget_ratio_relayed">已放行 %1$d</string>
+
+  <string name="widget_latest_blocked_label">最近拦截</string>
+  <string name="widget_latest_blocked_description">最近一条被拦下的请求：域名与发起它的应用。只显示一条，完整流水在「网络活动」页。</string>
+  <string name="widget_latest_blocked_empty">还没有拦下任何请求</string>
+
+  <string name="widget_protected_applications_label">受保护应用</string>
+  <string name="widget_protected_applications_description">当前有多少个应用被单独选中保护。一个都没选时表示接管全部应用。</string>
+  <string name="widget_protected_applications_detail">未单独选择时接管全部应用</string>
+
+  <string name="widget_observed_total_label">观测请求</string>
+  <string name="widget_observed_total_description">累计经过本机解析的请求总数，附其中被放行的数量。</string>
+  <string name="widget_observed_total_detail">其中已放行 %1$d</string>
+
+  <string name="widget_rule_scale_label">规则规模</string>
+  <string name="widget_rule_scale_description">当前生效的拦截规则条数，附其中由你自己添加的条数。</string>
+  <string name="widget_rule_scale_detail">其中用户添加 %1$d 条</string>
+
+  <string name="widget_top_blocked_label">拦截排行</string>
+  <string name="widget_top_blocked_description">被拦次数最多的三个应用。用来看出哪些应用广告最密集。</string>
+  <string name="widget_ranking_empty">还没有可排行的记录</string>
+
+  <string name="widget_blocked_trend_label">拦截趋势</string>
+  <string name="widget_blocked_trend_description">最近一段观测窗口内，哪些时段出现过拦截。样本太少时不绘制。</string>
+  <string name="widget_trend_detail">最近 %1$d 段观测，亮色表示该段有拦截</string>
+  <string name="widget_trend_empty">观测样本还太少，暂不绘制趋势</string>
+
+  <string name="widget_overview_label">保护概览</string>
+  <string name="widget_overview_description">把开关状态与累计拦截数放在一张卡上。只想放一个小组件时用它。</string>
+
+  <string name="widget_status_running">保护已开启</string>
+  <string name="widget_status_transitioning">正在切换</string>
+  <string name="widget_status_stopped">保护已停止</string>
+  <string name="widget_status_failed">启动失败</string>
+  <string name="widget_action_start">开启保护</string>
+  <string name="widget_action_stop">停止保护</string>
+
   <!-- 首页：接管范围说明。必须如实描述当前能力边界，不能宣称未实现的能力 -->
   <string name="home_scope_title">当前接管范围</string>
   <string name="home_scope_value">仅域名解析　IPv4 / UDP 53</string>

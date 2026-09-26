@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  桌面小组件卡片底（深色）。与 darkNezhaPalette.surface 同值。
+  不做成 drawable-night：桌面卡片跟随的是**应用主题偏好**而不是系统明暗，
+  用户把应用锁成深色、系统仍是浅色时，桌面那张卡也该是深的。系统无法替我们做这个判断。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+  android:shape="rectangle">
+  <solid android:color="#121216" />
+  <corners android:radius="20dp" />
+</shape>

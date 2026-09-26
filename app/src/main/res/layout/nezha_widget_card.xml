@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  大数字卡：标题 + 数值 + 脚注。四种小组件（拦截数 / 观测数 / 规则数 / 受保护应用）共用这一份结构。
+  只使用 RemoteViews 支持的视图与属性：这里放任何不支持的属性都会在桌面上静默失效。
+  文案与颜色一律由 NezhaWidgetRenderer 在刷新时写入，布局里不写死。
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/nezha_widget_background_light"
+  android:gravity="center_vertical"
+  android:orientation="vertical"
+  android:padding="14dp">
+
+  <TextView
+    android:id="@+id/widget_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textSize="11sp" />
+
+  <TextView
+    android:id="@+id/widget_value"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:ellipsize="end"
+    android:includeFontPadding="false"
+    android:maxLines="1"
+    android:textSize="30sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/widget_detail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:ellipsize="end"
+    android:maxLines="2"
+    android:textSize="11sp" />
+</LinearLayout>

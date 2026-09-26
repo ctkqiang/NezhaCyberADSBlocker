@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  桌面小组件卡片底（浅色）。
+  色值与 ui/theme/NezhaPalette.kt 的 lightNezhaPalette.surface 相同：drawable 只能写字面色值，
+  因此这一处必然与调色板重复。改调色板时必须同时改这里，否则桌面卡片会和界面里的卡片不同色。
+  圆角用 drawable 而不是让渲染层设背景色——setBackgroundColor 会把圆角一起抹掉。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+  android:shape="rectangle">
+  <solid android:color="#FFFFFF" />
+  <corners android:radius="20dp" />
+</shape>
