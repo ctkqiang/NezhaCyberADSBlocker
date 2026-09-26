@@ -20,6 +20,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.AppContainer
 import xin.ctkqiang.nezha_cyber.ads_block.R
 import xin.ctkqiang.nezha_cyber.ads_block.domain.vpn.VpnFailureReason
 import xin.ctkqiang.nezha_cyber.ads_block.domain.vpn.VpnSessionState
+import xin.ctkqiang.nezha_cyber.ads_block.notification.platform.AdBlockNotifier
 import xin.ctkqiang.nezha_cyber.ads_block.requireAppContainer
 
 /** 隧道 MTU。取以太网标准值，避免为 DNS 这种小包做分片。 */
@@ -62,10 +63,13 @@ class NezhaVpnService : VpnService() {
 
     private lateinit var trafficAttributor: TrafficAttributor
 
+    private lateinit var adBlockNotifier: AdBlockNotifier
+
     private var dnsServerMonitor: DnsServerMonitor? = null
     private var tunnel: ParcelFileDescriptor? = null
     private var relay: DnsRelay? = null
     private var relayJob: Job? = null
+    private var notifierJob: Job? = null
 
     @Volatile
     private var isRunning = false
@@ -74,6 +78,7 @@ class NezhaVpnService : VpnService() {
         super.onCreate()
         container = requireAppContainer(this)
         trafficAttributor = TrafficAttributor(this)
+        adBlockNotifier = AdBlockNotifier(this, container.installedApplicationSource)
         VpnNotification.ensureChannel(this)
         // 换网时只把新的上游地址推给中继，不重建隧道：隧道里唯一被捕获的地址是本应用自造的，
         // 与具体网络无关，因此没有任何理由为了 DNS 变化去拆掉隧道。
@@ -185,6 +190,7 @@ class NezhaVpnService : VpnService() {
                     blockedResponseMode = { container.privacyPolicyStore.policy.value.blockedResponseMode },
                     observations = container.observationStore,
                     attributePackage = trafficAttributor::ownerPackage,
+                    onBlocked = adBlockNotifier::record,
                 ),
                 host = object : TunnelHost {
                     override fun protect(socket: DatagramSocket): Boolean = this@NezhaVpnService.protect(socket)
@@ -203,6 +209,8 @@ class NezhaVpnService : VpnService() {
         relay = dnsRelay
         isRunning = true
         relayJob = serviceScope.launch { dnsRelay.runWhile { isRunning } }
+        // 拦截通知跑在独立协程里：中继线程只负责把结果塞进去，发布节奏由这里控制。
+        notifierJob = serviceScope.launch { adBlockNotifier.runWhile { isRunning } }
         return true
     }
 
@@ -214,6 +222,9 @@ class NezhaVpnService : VpnService() {
         relay = null
         relayJob?.cancel()
         relayJob = null
+        notifierJob?.cancel()
+        notifierJob = null
+        adBlockNotifier.cancel()
         tunnel?.close()
         tunnel = null
     }

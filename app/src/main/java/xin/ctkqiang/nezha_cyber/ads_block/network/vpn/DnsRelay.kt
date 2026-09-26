@@ -131,17 +131,19 @@ internal class DnsRelay(
     private fun handlePacket(readLength: Int, deviceOutput: FileOutputStream): ForwardOutcome {
         val query = readDnsQuery(inbound, readLength) ?: return ForwardOutcome.Ignored
         val question = readQuestion(query.payload, query.payload.size)
-        val decision = question?.let { parsed -> inputs.ruleEngine().evaluate(parsed.name) }
+        // 归属反查只做一次，供规则判定与观测记录共用：它要问系统这条连接属于哪个 UID，
+        // 是整个逐包路径上最贵的一步，重复调用不仅浪费，两次结果还可能不一致。
+        val packageName = inputs.attributePackage(query)
+        val decision = question?.let { parsed -> inputs.ruleEngine().evaluate(parsed.name, packageName) }
             ?: FilterDecision.Unknown
         val payload = resolvePayload(query, question, decision) ?: return ForwardOutcome.Unreachable
-        return deliver(query, payload, question, decision, deviceOutput)
+        return deliver(query, payload, toObservation(question, decision, packageName), deviceOutput)
     }
 
     private fun deliver(
         query: DnsQuery,
         payload: ByteArray,
-        question: DnsQuestion?,
-        decision: FilterDecision,
+        observation: DomainObservation,
         deviceOutput: FileOutputStream,
     ): ForwardOutcome {
         val packet = buildDnsResponsePacket(
@@ -152,7 +154,12 @@ internal class DnsRelay(
             queryPort = query.sourcePort,
         ) ?: return ForwardOutcome.Ignored
         deviceOutput.write(packet)
-        inputs.observations.record(toObservation(query, question, decision))
+        inputs.observations.record(observation)
+        // 只有真正拦下的才通知。放行是绝大多数情况，为它发通知等于刷屏，
+        // 也会把「被拦了」这个信号稀释掉。回调本身不做耗时工作，见 RelayInputs。
+        if (observation.isBlocked) {
+            inputs.onBlocked(observation)
+        }
         return ForwardOutcome.Delivered
     }
 
@@ -180,17 +187,20 @@ internal class DnsRelay(
         return null
     }
 
-    private fun toObservation(query: DnsQuery, question: DnsQuestion?, decision: FilterDecision): DomainObservation =
-        DomainObservation(
-            at = Instant.now(),
-            host = question?.name ?: UNREADABLE_HOST,
-            action = decision.action,
-            matchedRule = decision.matchedRule,
-            source = decision.source,
-            // 归属查询是增强信息：系统在 API 29 以下没有等价接口，取不到就如实留空，
-            // 界面显示「未知来源」，绝不猜一个应用出来。
-            packageName = inputs.attributePackage(query),
-        )
+    private fun toObservation(
+        question: DnsQuestion?,
+        decision: FilterDecision,
+        packageName: String?,
+    ): DomainObservation = DomainObservation(
+        at = Instant.now(),
+        host = question?.name ?: UNREADABLE_HOST,
+        action = decision.action,
+        matchedRule = decision.matchedRule,
+        source = decision.source,
+        // 归属查询是增强信息：系统在 API 29 以下没有等价接口，取不到就如实留空，
+        // 界面显示「未知来源」，绝不猜一个应用出来。它同时决定应用专属规则能否命中。
+        packageName = packageName,
+    )
 
     private fun askUpstream(payload: ByteArray, server: Inet4Address): ByteArray? = try {
         socket.send(DatagramPacket(payload, payload.size, server, Ipv4UdpFormat.DNS_PORT))
