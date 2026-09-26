@@ -232,3 +232,50 @@ com.xunmeng.pinduoduo video-dsp.pddpic.com
 # ── Grab（com.grabtaxi.passenger）· 无可用条目 ─────────────────────────────────
 # Grab 的广告走自有 GrabAds 平台，由应用自身的接口与素材域名承载，与登录、下单共用同一批
 # 主机。在域名层面无法只拦广告而不影响核心功能，因此这里不列任何条目——列了也是假的。
+
+# ══ HTTPDNS 拦截 ══════════════════════════════════════════════════════════════
+#
+# 这一节与上面所有条目性质不同，必须单独说明，否则会被当成普通广告域名随手改掉。
+#
+# 国内 App 普遍使用 HTTPDNS：不经过系统解析，直接用 HTTPS 换回 IP 地址。凡是这样建立的连接，
+# 本应用在域名层**完全看不到**——这不是清单漏了域名，而是拦截点根本不在那条路径上。
+# 上面写着待确认的条目、乃至已经确认的条目，在 HTTPDNS 生效时都可能是空转的。
+#
+# 挡掉这些主机，是让 App 退回系统解析、从而让上面的域名规则重新生效的唯一手段。这是各家
+# 去广告规则集的通行做法——它们为此专门维护一个「HTTPDNS 拦截器」模块，把 httpdns / httpsdns /
+# dns 这类主机集中挡掉，而不是混在广告域名里逐条列举。
+#
+# 代价与边界：
+# - 各家 HTTPDNS SDK 按设计会在请求失败时降级到系统解析（这正是「降级」的用途），因此正常
+#   情况下只是绕了个弯，功能不受影响；
+# - 若某个版本的 App 不降级，该 App 可能加载变慢甚至失败。风险被限制在左侧写明的那个应用内
+#   ——应用专属规则只对该包名生效，其它应用完全不受影响；
+# - 真出问题，删掉对应那一行即可，不需要改代码。
+#
+# 一句话说清这里的取舍：不碰 TLS 就拦不住这些广告，不是实现没做完，而是拦截点的问题。
+# 这条边界写下来，是为了不让下一个人再从加广告域名开始试一遍。
+
+# 央视财经
+com.cctv.caijing httpdns.cctv.com
+# 应用宝
+com.tencent.android.qqdownloader httpdns.kg.qq.com
+# 懂车帝（字节系，用火山引擎的 HTTPDNS）
+com.ss.android.auto httpdns.volcengineapi.com
+com.ss.android.ugc.aweme httpdns.volcengineapi.com
+# 百度地图
+com.baidu.BaiduMap httpdns.baidu.com
+com.baidu.BaiduMap httpdns.baidubce.com
+com.baidu.BaiduMap httpsdns.baidu.com
+com.baidu.BaiduMap httpdns.n.shifen.com
+# 高德（阿里系，用阿里云 HTTPDNS）
+com.autonavi.minimap httpdns.alicdn.com
+com.autonavi.minimap httpdns-api.aliyuncs.com
+com.autonavi.minimap httpdns-sc.aliyuncs.com
+com.autonavi.minimap httpdns.danuoyi.tbcache.com
+# 淘宝与拼多多同属阿里生态，共用同一套 HTTPDNS
+com.taobao.taobao httpdns.alicdn.com
+com.xunmeng.pinduoduo httpdns.alicdn.com
+# 微信：小程序与公众号运行在微信进程内，因此这三条同时作用于小程序
+com.tencent.mm dns.weixin.qq.com
+com.tencent.mm dns.weixin.qq.com.cn
+com.tencent.mm aedns.weixin.qq.com
