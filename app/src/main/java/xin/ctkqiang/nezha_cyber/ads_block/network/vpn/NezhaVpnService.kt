@@ -130,16 +130,25 @@ class NezhaVpnService : VpnService() {
         }
     }
 
+    /**
+     * 停止当前会话并让服务退出。
+     *
+     * 收尾时自己调 [stopSelf]：收到停止指令后服务若还赖着不走，前台通知会一直挂着，
+     * 用户看到的就是「按了停止但那个盾牌还在」。也必须在这里停止，而不是只依赖控制器的
+     * `stopService`——那条路是异步的，而这条（收到 ACTION_STOP 后自行退出）是同步的。
+     */
     @Synchronized
     private fun stopSession() {
         if (!isRunning && tunnel == null) {
             VpnSessionRegistry.publish(VpnSessionState.Stopped)
+            stopSelf()
             return
         }
         VpnSessionRegistry.publish(VpnSessionState.Stopping)
         tearDown()
         stopForeground(STOP_FOREGROUND_REMOVE)
         VpnSessionRegistry.publish(VpnSessionState.Stopped)
+        stopSelf()
     }
 
     /**

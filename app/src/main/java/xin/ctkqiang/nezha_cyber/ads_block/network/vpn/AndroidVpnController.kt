@@ -3,6 +3,7 @@ package xin.ctkqiang.nezha_cyber.ads_block.network.vpn
 import android.content.Context
 import android.content.Intent
 import android.net.VpnService
+import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +17,8 @@ import xin.ctkqiang.nezha_cyber.ads_block.domain.vpn.VpnStartResult
 
 /** 等待隧道进入稳定状态的上限。超过则视为建立失败，而不是让界面无限等待。 */
 private const val TUNNEL_SETTLE_TIMEOUT_MILLIS = 10_000L
+
+private const val LOG_TAG = "NezhaVpnController"
 
 /**
  * [VpnController] 的 Android 适配器。
@@ -45,11 +48,25 @@ class AndroidVpnController(context: Context) : VpnController {
     }
 
     /**
-     * 停止走 [Context.stopService]：它是任何前后台状态下都允许的直接操作，
-     * 不需要先启动服务再让它自杀，也就不会触发前台服务的启动时限要求。
+     * 停止保护。
+     *
+     * 两步都做，顺序不能反：
+     * 1. 先发一条显式的 [NezhaVpnService.ACTION_STOP]——由服务在主线程上处理，隧道在它返回之前
+     *    就被关闭，用户按下停止与隧道真正关闭之间没有空窗；
+     * 2. 再 [Context.stopService]——让服务本身退出、前台通知消失。
+     *
+     * 只做第二步是不够可靠的：`stopService` 是异步的，隧道何时关闭取决于系统什么时候回调
+     * `onDestroy`，那个时机本应用控制不了。而隧道只要还开着，整机解析就仍然被引到本应用，
+     * 用户看到的就是「按了停止，保护还开着、网也不通」。
+     *
+     * 第一步在后台可能被系统拒绝启动（Android 8 起限制后台启动服务，桌面小组件就属于这种情况）。
+     * 这里不把它当作失败：拒绝时记一笔，第二步仍然是有效的停止手段，只是回到异步时序。
      */
     override suspend fun stop() {
         withContext(Dispatchers.IO) {
+            val stopIntent = serviceIntent().setAction(NezhaVpnService.ACTION_STOP)
+            runCatching { applicationContext.startService(stopIntent) }
+                .onFailure { failure -> Log.w(LOG_TAG, "停止指令未能直接送达，改由 stopService 兜底", failure) }
             applicationContext.stopService(serviceIntent())
         }
     }
