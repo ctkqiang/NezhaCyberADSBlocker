@@ -33,23 +33,67 @@ com.sina.weibo saxn.sina.com.cn
 com.sina.weibo sinaads.sina.com.cn
 com.sina.weibo dcads.sina.com.cn
 com.sina.weibo emarketing.sina.com.cn
-# 微博自有广告平台（uve 段）：客户端拉取广告走 wbpullad.lua，它就在这两个主机上
-com.sina.weibo sdkapp.uve.weibo.com
-com.sina.weibo wbapp.uve.weibo.com
+# 微博自有广告平台：uve 这一整段都是商业化单元。已确认的子域包括——
+#   sdkapp / wbapp —— 广告接口（客户端拉广告走 wbpullad.lua）
+#   bootpreload / bootrealtime —— 开屏广告的预加载与实时请求
+#   adimg / fastimage —— 广告素材
+#   click —— 广告点击；datacollection —— 广告数据采集
+# 因此用通配覆盖整段，而不是逐个列举：逐条列举会随微博新增子域而漏掉，而这一段里出现的
+# 主机按已掌握的证据都属商业化，没有承载核心功能的迹象。
+com.sina.weibo *.uve.weibo.com
+# 开屏广告与商业推广
+com.sina.weibo biz.weibo.com
+com.sina.weibo biz.weibo.com.cn
+com.sina.weibo promote.biz.weibo.cn
+com.sina.weibo ad.weibo.com
+com.sina.weibo dsp.edm.weibo.cn
+com.sina.weibo zymo.mps.weibo.com
+com.sina.weibo weibomingzi.com
+# 推广位与推荐流
+com.sina.weibo alitui.weibo.com
+com.sina.weibo alitui.weibo.com.cn
+com.sina.weibo s.alitui.weibo.com
+com.sina.weibo tui.weibo.com
+com.sina.weibo wax.weibo.com
+com.sina.weibo wax.weibo.com.cn
+com.sina.weibo widget.weibo.com
+com.sina.weibo dp.im.weibo.cn
+# 推送广告
+com.sina.weibo gw5.push.mcp.weibo.cn
+com.sina.weibo gw6.push.mcp.weibo.cn
 # 广告点击与投放统计
+com.sina.weibo adimg.mobile.sina.cn
 com.sina.weibo sdkclick.mobile.sina.cn
 com.sina.weibo wbclick.mobile.sina.cn
 com.sina.weibo c.biz.weibo.com
 com.sina.weibo c.wcpt.biz.weibo.com
 com.sina.weibo atm.sina.com
 com.sina.weibo tjs.sjs.sinajs.cn
+com.sina.weibo newspush.sinajs.cn
+com.sina.weibo adpinpai.video.weibocdn.com
 #
-# 特意**没有**收进来的三个主机，理由值得写下来，因为它们都出现在别家的去广告清单里：
-#   sdkapp.mobile.sina.cn —— 名字只说明它是一个 SDK 网关，无法确认是广告专用。本文件的
-#                            收录标准是「可确认的广告或追踪域名」，依据不足就不收。
-#   trends.mobile.sina.cn —— trends 更可能是热搜／推送这类功能，拦掉等于砍掉功能。
-#   game.weibo.com        —— 游戏中心是一个内容入口，不是广告位。拦它属于替用户做产品决策。
-# 这三条都遵循同一条原则：宁可漏拦，不误伤应用功能（工程规则第 17、32 节）。
+# 下面三条与上面所有条目性质不同：它们去掉的是**功能模块**，不是广告位。
+# 微博的游戏中心既是内容入口，也是一个持续推广游戏的商业化出口，专门做微博去广告的规则集
+# 把它归入「多余模块」而不是「广告」。这里收进来是因为你要求尽可能拦，但你要知道代价——
+# 如果你会用微博的游戏中心，删掉这三行即可。
+com.sina.weibo game.weibo.com
+com.sina.weibo game.weibo.cn
+com.sina.weibo m.game.weibo.cn
+#
+# 下五个主机同样出现在别家的去广告清单里，这里**仍然不收**，因为最新的、专门针对微博的
+# 规则集恰恰没有用它们，而是改用 api.weibo.cn 上的 URL 级改写——那说明这些主机并非广告专用：
+#   wbapp.mobile.sina.cn / sdkapp.mobile.sina.cn —— 应用与 SDK 网关，广告之外还用别的东西
+#   trends.mobile.sina.cn                      —— 热搜／推送
+#   pay.mobile.sina.cn / ota.pay.mobile.sina.cn —— 支付。拦掉会直接砍掉付费功能
+# 宁可漏拦，不误伤功能（工程规则第 17、32 节）。
+#
+# ── 关于「偶尔还是会看到广告」──
+# 这不是清单还不够长，而是**拦截点不在这条路径上**。微博信息流里的广告是混在
+# api.weibo.cn/2/cardlist 这类接口的 JSON 响应里一起下发的，与正常内容同一个主机、同一个请求。
+# 专门做这件事的规则集采用的正是**改写响应体**（从 JSON 里删掉广告条目），而不是加域名——
+# 因为域名层面根本分不开它和正文。
+# 本应用按工程规则第 18、33 节不做 TLS 拦截，因此**这一部分广告在架构上拦不到**，
+# 加多少域名都无济于事。这条边界写在这里，是为了不让下一个人继续往清单里加域名。
 
 # ── 微博（com.sina.weibo）· HTTPDNS ────────────────────────────────────────────
 # 下面这一条与上面所有条目性质不同，必须单独说明，否则会被当成普通规则随手删掉。
