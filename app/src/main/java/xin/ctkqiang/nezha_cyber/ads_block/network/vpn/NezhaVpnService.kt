@@ -214,9 +214,22 @@ class NezhaVpnService : VpnService() {
         return true
     }
 
+    /**
+     * 拆除隧道。
+     *
+     * **先关隧道，再做其它清理，顺序不能换。** 隧道是把整机域名解析引到本应用的那一样东西：
+     * 只要它还开着，任何一步清理慢下来，在用户眼里就是「所有应用都上不了网，而且关不掉」——
+     * 而清理里包含通知管理器的跨进程调用，那不是本应用能控制快慢的。先把隧道关掉，
+     * 后续步骤再慢也只影响本应用自己的收尾。
+     *
+     * 这里曾经把关隧道放在最后，而通知清理又持锁做跨进程调用：通知管理器一慢，
+     * 主线程就卡在这把锁上，隧道因此一直开着。症状是用户既停不掉保护，又上不了网。
+     */
     @Synchronized
     private fun tearDown() {
         isRunning = false
+        tunnel?.close()
+        tunnel = null
         dnsServerMonitor?.stop()
         relay?.close()
         relay = null
@@ -225,8 +238,6 @@ class NezhaVpnService : VpnService() {
         notifierJob?.cancel()
         notifierJob = null
         adBlockNotifier.cancel()
-        tunnel?.close()
-        tunnel = null
     }
 
     companion object {

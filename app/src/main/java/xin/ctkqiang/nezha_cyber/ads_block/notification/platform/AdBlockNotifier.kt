@@ -56,6 +56,11 @@ internal class AdBlockNotifier(
 
     private val manager: NotificationManager? = context.getSystemService(NotificationManager::class.java)
 
+    init {
+        // 频道只建一次。这里曾经在每次发布时都调一次，等于每个被拦下的请求都多做一次跨进程查询。
+        AdBlockNotification.ensureChannel(context)
+    }
+
     private val pending = Channel<DomainObservation>(
         capacity = QUEUE_CAPACITY,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
@@ -87,34 +92,44 @@ internal class AdBlockNotifier(
             stale = pending.tryReceive()
         }
         val notificationManager = manager ?: return
-        synchronized(stateLock) {
-            liveNotificationIds.forEach { id -> notificationManager.cancel(NOTIFICATION_TAG, id) }
+        val ids = synchronized(stateLock) {
+            val snapshot = liveNotificationIds.toList()
             liveNotificationIds.clear()
+            snapshot
         }
+        // 取消动作在锁外做：cancel() 由主线程在停止保护时调用，在锁里做跨进程调用，
+        // 会让「停止保护」去等一个不受本应用控制的系统调用。
+        ids.forEach { id -> notificationManager.cancel(NOTIFICATION_TAG, id) }
     }
 
     private suspend fun publish(observation: DomainObservation) {
         val notificationManager = manager ?: return
-        AdBlockNotification.ensureChannel(context)
         val appLabel = applicationLabelOf(observation.packageName)
         val notification = AdBlockNotification.build(
             context = context,
             observation = observation,
             appLabel = appLabel,
         )
-        synchronized(stateLock) {
-            val id = allocateNotificationId()
-            notificationManager.notify(NOTIFICATION_TAG, id, notification)
-            liveNotificationIds.addLast(id)
-            cancelOverflowing(notificationManager)
-        }
+        val slot = synchronized(stateLock) { allocateSlot() }
+        // 两个跨进程调用都在锁外。
+        notificationManager.notify(NOTIFICATION_TAG, slot.id, notification)
+        slot.evicted.forEach { evictedId -> notificationManager.cancel(NOTIFICATION_TAG, evictedId) }
     }
 
-    /** 超出上限时撤掉最早的几条：通知栏不是日志，无界堆积会把它整条占满。 */
-    private fun cancelOverflowing(notificationManager: NotificationManager) {
+    /**
+     * 分配一个通知 id，并算出因超限而需要撤下的通知。
+     *
+     * 只做纯记账、不做任何跨进程调用，因此可以安全地在锁里跑；真正的 notify 与 cancel
+     * 由 [publish] 在锁外执行。分开的理由见 [publish] 的注释——这是本类不再卡住停止流程的关键。
+     */
+    private fun allocateSlot(): Slot {
+        val id = allocateNotificationId()
+        liveNotificationIds.addLast(id)
+        val evicted = mutableListOf<Int>()
         while (liveNotificationIds.size > MAX_LIVE_NOTIFICATIONS) {
-            notificationManager.cancel(NOTIFICATION_TAG, liveNotificationIds.removeFirst())
+            evicted.add(liveNotificationIds.removeFirst())
         }
+        return Slot(id = id, evicted = evicted)
     }
 
     /**
@@ -144,4 +159,12 @@ internal class AdBlockNotifier(
         if (packageName == null) return context.getString(R.string.ad_block_app_unknown)
         return applicationSource.displayNames(setOf(packageName))[packageName] ?: packageName
     }
+
+    /**
+     * 一次发布的分配结果。
+     *
+     * 嵌套在这里是因为它只在锁内算出、在锁外使用，没有第二个使用场景
+     * （工程规则第 37.7 节：嵌套类型置于类体末尾）。
+     */
+    private data class Slot(val id: Int, val evicted: List<Int>)
 }
