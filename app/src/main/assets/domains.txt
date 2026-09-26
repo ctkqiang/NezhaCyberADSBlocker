@@ -8,8 +8,99 @@
 #
 # 修改本文件时必须同时递增 assets/domains.version，否则已安装用户拿不到新增条目。
 #
-0.0.0.0.creative.hpyrdr.com
-0.0.0.0.hpyrdr.com
+# ══ HTTPDNS 拦截（全局）══════════════════════════════════════════════════════
+#
+# 国内应用普遍使用 HTTPDNS：不经过系统解析，直接以 HTTPS 换回 IP 地址。这样建立的连接
+# 在域名层**完全看不到**，本文件下面那七万条域名对它一条都不起作用。因此它不是「又一批广告
+# 域名」，而是让整个域名规则生效的前置条件，必须挡。
+#
+# 这是各家去广告规则集的通行做法——它们为此专门维护一个「HTTPDNS 拦截器」模块，
+# 把所有 httpdns / httpsdns 主机集中挡掉，而不是混进广告域名里逐条列举。
+#
+# 代价：HTTPDNS SDK 按设计会在请求失败时降级到系统解析，因此正常情况下只是绕了个弯。
+# 若某个应用不降级，它可能加载变慢。这一条是全局生效的，无法按应用收窄——
+# 想要收窄就把对应几行移到 assets/app_ads.txt，那里按包名生效。
+#
+# 腾讯系
+dns.qq.com
+dns.weixin.qq.com
+dns.weixin.qq.com.cn
+aedns.weixin.qq.com
+httpdns.kg.qq.com
+# 百度系
+httpdns.baidu.com
+httpdns.baidubce.com
+httpsdns.baidu.com
+httpdns.n.shifen.com
+# 阿里系
+httpdns.aliyuncs.com
+httpdns-api.aliyuncs.com
+httpdns-sc.aliyuncs.com
+httpdns.alicdn.com
+httpdns.danuoyi.tbcache.com
+amdc.alipay.com
+# 字节系
+httpdns.volcengineapi.com
+# 新浪
+dns.weibo.cn
+# 央视
+httpdns.cctv.com
+# 美团 / 知乎 / 哔哩哔哩
+httpdns.meituan.com
+httpdns.zhihu.com
+httpdns.bilivideo.com
+# 网易系
+httpdns.c.163.com
+music.httpdns.c.163.com
+lofter.httpdns.c.163.com
+httpdns.music.163.com
+httpdns.n.netease.com
+httpdns-sdk.n.netease.com
+httpdns.music.ntes53.netease.com
+# YY
+httpdns.gslb.yy.com
+union-httpdns.gslb.yy.com
+yuyin-httpdns.gslb.yy.com
+httpdns-v6.gslb.yy.com
+# 小米
+httpdns.browser.miui.com
+resolver.msg.xiaomi.net
+resolver.msg.global.xiaomi.net
+resolver.gslb.mi-idc.com
+resolver.mi.xiaomi.com
+# OPPO / 一加 / realme
+httpdns.ocloud.heytapmobi.com
+httpdns.push.heytapmobi.com
+httpdns.ocloud.oppomobile.com
+httpdns.push.oppomobile.com
+ocloud-httpdns-cn.heytapmobi.com
+# 华为 / 荣耀
+httpdns.platform.dbankcloud.cn
+httpdns.platform.dbankcloud.com
+httpdns.c.cdnhwc2.com
+httpdns1.cc.cdnhwc5.com
+httpdns-browser.platform.dbankcloud.cn
+httpdns.huaweicloud.com
+httpdns-platform-dbankcloud-com-drcn.wec.dbankedge.cn
+# 其余
+dns.jd.com
+doh.jd.com
+httpdns.tantanapp.com
+httpdns.zybang.com
+httpdns.calorietech.com
+httpdns.yunxindns.com
+httpdns.yunxinfw.com
+httpdns.kwd.inkuai.com
+httpdns.bcelive.com
+ucdc.upaas.quark.cn
+#
+# ══ 上游清单 ═════════════════════════════════════════════════════════════════
+#
+# 以下为上游 hosts 转换结果。曾有两条转换时把 hosts 的 IP 前缀一并留了下来，
+# 那两条永远不可能命中任何域名，这里一并修正。
+#
+creative.hpyrdr.com
+hpyrdr.com
 0.ackzany.com
 0.athwartwhoafat.com
 0.blissfullyzebra.com
