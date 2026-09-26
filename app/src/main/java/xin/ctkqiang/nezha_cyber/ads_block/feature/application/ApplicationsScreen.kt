@@ -27,6 +27,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaAppIcon
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaEmptyState
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaListScaffold
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaPillButton
+import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaRatioBar
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaSurfaceCard
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaSwitch
 import xin.ctkqiang.nezha_cyber.ads_block.ui.data.LocalApplicationPermissionSource
@@ -236,6 +237,11 @@ private fun ApplicationRow(
                     style = NezhaTheme.typography.caption.copy(
                         color = if (row.blockedCount > 0) palette.brand else palette.textSecondary,
                     ),
+                )
+                Spacer(modifier = Modifier.height(NezhaDimens.tightGap))
+                NezhaRatioBar(
+                    highlighted = row.blockedCount.toLong(),
+                    rest = (row.observedCount - row.blockedCount).coerceAtLeast(0).toLong(),
                 )
                 Spacer(modifier = Modifier.height(NezhaDimens.tightGap))
                 BasicText(

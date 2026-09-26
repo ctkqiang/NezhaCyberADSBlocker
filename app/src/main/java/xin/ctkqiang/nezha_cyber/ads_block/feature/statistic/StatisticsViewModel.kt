@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import java.time.Duration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,12 @@ private const val TOP_DOMAIN_LIMIT = 5
 
 /** 每个应用列出多少个高频域名。手机上一屏放不下更多，也超出「这个应用在跟谁通信」的用量。 */
 private const val TOP_HOST_LIMIT_PER_APPLICATION = 3
+
+/** 趋势图分几段。段数太少看不出起伏，太多则在手机宽度上每根柱子不足一个发丝宽。 */
+private const val TREND_BUCKET_COUNT = 12
+
+/** 少于这个条数就不画趋势：一两个点连不成趋势，硬画只会给出「有曲线」的错觉。 */
+private const val MINIMUM_TREND_OBSERVATIONS = 4
 
 /**
  * 统计 ViewModel。
@@ -63,6 +70,8 @@ class StatisticsViewModel(
                     current.copy(
                         topBlockedDomains = observations.topBlockedDomains(),
                         applicationTraffic = observations.toApplicationTraffic(labels),
+                        trafficTrend = observations.toTrafficTrend(),
+                        windowObservationCount = observations.size,
                     )
                 }
             }
@@ -152,6 +161,42 @@ class StatisticsViewModel(
             compareByDescending<ApplicationTrafficSummary> { summary -> summary.blocked }
                 .thenByDescending { summary -> summary.observed },
         )
+
+    /**
+     * 把最近窗口按时间等分成若干段。
+     *
+     * 分桶边界取窗口自身的首尾时刻，而不是绝对时钟的整点：窗口只有几十条观测、跨度往往只有
+     * 几分钟，按整点分桶会让绝大多数桶是空的，图上只剩孤零零一根柱子。代价是**桶宽随窗口
+     * 长度变化**，因此界面必须写明这是等分，不能让读者把横轴当成固定时长。
+     *
+     * 样本不足时返回空列表而不是一张贴地的图：全零的图会被读成「最近没有流量」，
+     * 而事实只是「样本太少」——两者对用户是相反的含义。
+     */
+    private fun List<DomainObservation>.toTrafficTrend(): List<TrafficBucket> {
+        val ordered = sortedBy { observation -> observation.at }
+        val start = ordered.firstOrNull()?.at
+        val span = if (start == null || ordered.size < MINIMUM_TREND_OBSERVATIONS) {
+            0L
+        } else {
+            Duration.between(start, ordered.last().at).toMillis()
+        }
+        return if (start == null || span <= 0L) {
+            emptyList()
+        } else {
+            val buckets = MutableList(TREND_BUCKET_COUNT) { TrafficBucket(blocked = 0, relayed = 0) }
+            for (observation in ordered) {
+                val offset = Duration.between(start, observation.at).toMillis()
+                val index = (offset * TREND_BUCKET_COUNT / span).toInt().coerceIn(0, TREND_BUCKET_COUNT - 1)
+                val current = buckets[index]
+                buckets[index] = if (observation.isBlocked) {
+                    TrafficBucket(blocked = current.blocked + 1, relayed = current.relayed)
+                } else {
+                    TrafficBucket(blocked = current.blocked, relayed = current.relayed + 1)
+                }
+            }
+            buckets
+        }
+    }
 
     private fun List<DomainObservation>.topHosts(): List<String> = groupingBy { observation -> observation.host }
         .eachCount()

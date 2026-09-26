@@ -18,6 +18,15 @@ data class StatisticsUiState(
     val builtinVersion: Int = 0,
     val topBlockedDomains: List<BlockedDomainCount> = emptyList(),
     val applicationTraffic: List<ApplicationTrafficSummary> = emptyList(),
+    /**
+     * 趋势图的分桶序列，按时间由早到晚。
+     *
+     * 为空表示样本不足以画趋势（少于两条观测、或全部落在同一时刻），
+     * 此时界面显示说明而不是一张贴地的空图——空图会被读成「最近没有流量」。
+     */
+    val trafficTrend: List<TrafficBucket> = emptyList(),
+    /** 趋势所覆盖的观测条数。界面必须写出这个数，否则读者无从判断这张图覆盖了多长一段。 */
+    val windowObservationCount: Int = 0,
     val isLoading: Boolean = true,
     /**
      * 观测记录是否开着。
@@ -48,6 +57,14 @@ sealed interface ProtectedScope {
 
 /** 被拦截域名的出现次数。[count] 来自最近窗口，界面必须标注这一点。 */
 data class BlockedDomainCount(val host: String, val count: Int)
+
+/**
+ * 趋势图的一段。
+ *
+ * 只带两个计数，不带时间戳：横轴的含义由页面的说明文字给出，模型里放时间会诱使界面去
+ * 格式化时间，而「这一段跨越多长」是读数口径问题，属于页面而不是数据。
+ */
+data class TrafficBucket(val blocked: Int, val relayed: Int)
 
 /**
  * 一个应用的流量读数（第 24 节的按应用维度）。

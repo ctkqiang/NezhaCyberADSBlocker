@@ -207,6 +207,57 @@ class StatisticsViewModelTest {
         assertFalse(viewModel.uiState.value.isObservationLoggingEnabled)
     }
 
+    @Test
+    fun `观测太少时不画趋势`() {
+        val store = FakeObservationStore(
+            recent = listOf(
+                observationAt(offsetSeconds = 0, blocked = true),
+                observationAt(offsetSeconds = OBSERVATION_INTERVAL_SECONDS, blocked = false),
+            ),
+        )
+
+        val state = viewModel(store).uiState.value
+
+        assertTrue(state.trafficTrend.isEmpty())
+        assertEquals(2, state.windowObservationCount)
+    }
+
+    /**
+     * 全部落在同一时刻时不能画趋势：分桶跨度为零，任何分法都只是把点堆在同一个桶里，
+     * 那不是趋势。此时必须返回空，由界面说明原因。
+     */
+    @Test
+    fun `全部落在同一时刻时不画趋势`() {
+        val store = FakeObservationStore(
+            recent = List(TREND_SAMPLE_SIZE) { index -> observationAt(offsetSeconds = 0, blocked = index % 2 == 0) },
+        )
+
+        assertTrue(viewModel(store).uiState.value.trafficTrend.isEmpty())
+    }
+
+    /** 分桶只改变分布，不改变总数：丢计数会让趋势图与上面的累计读数互相矛盾。 */
+    @Test
+    fun `趋势按时间等分且不丢计数`() {
+        val store = FakeObservationStore(
+            recent = List(TREND_SAMPLE_SIZE) { index ->
+                observationAt(
+                    offsetSeconds = index * OBSERVATION_INTERVAL_SECONDS,
+                    blocked = index % BLOCK_EVERY == 0,
+                )
+            },
+        )
+
+        val state = viewModel(store).uiState.value
+
+        assertEquals(TREND_BUCKET_COUNT, state.trafficTrend.size)
+        assertEquals(TREND_SAMPLE_SIZE, state.windowObservationCount)
+        assertEquals(EXPECTED_BLOCKED_IN_SAMPLE, state.trafficTrend.sumOf { bucket -> bucket.blocked })
+        assertEquals(
+            TREND_SAMPLE_SIZE - EXPECTED_BLOCKED_IN_SAMPLE,
+            state.trafficTrend.sumOf { bucket -> bucket.relayed },
+        )
+    }
+
     private fun viewModel(
         observationStore: FakeObservationStore,
         protectedPackages: Set<String> = emptySet(),
@@ -228,12 +279,33 @@ class StatisticsViewModelTest {
         packageName = packageName,
     )
 
+    /** 带时间偏移的观测，用于趋势分桶。偏移不同才会落进不同的桶。 */
+    private fun observationAt(offsetSeconds: Long, blocked: Boolean) = DomainObservation(
+        at = Instant.parse("2026-09-24T10:15:30Z").plusSeconds(offsetSeconds),
+        host = "ads.example.com",
+        action = if (blocked) RuleAction.BLOCK else RuleAction.ALLOW,
+        matchedRule = if (blocked) "ads.example.com" else null,
+        source = if (blocked) RuleSource.BUILTIN else null,
+        packageName = BROWSER,
+    )
+
     private companion object {
         const val BROWSER = "com.example.browser"
 
         const val VIDEO = "com.example.video"
 
         const val UNKNOWN = "com.example.unlisted"
+
+        /** 分桶数必须与 ViewModel 里的常量一致，否则「不丢计数」这条断言会失去意义。 */
+        const val TREND_BUCKET_COUNT = 12
+
+        const val TREND_SAMPLE_SIZE = 12
+
+        const val OBSERVATION_INTERVAL_SECONDS = 10L
+
+        const val BLOCK_EVERY = 3
+
+        const val EXPECTED_BLOCKED_IN_SAMPLE = 4
     }
 }
 

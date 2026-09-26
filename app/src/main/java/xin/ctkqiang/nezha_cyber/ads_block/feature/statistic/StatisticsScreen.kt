@@ -17,6 +17,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import xin.ctkqiang.nezha_cyber.ads_block.R
+import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaChartLegendEntry
+import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaComparisonBar
+import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaComparisonChart
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaMetricRow
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaPillButton
 import xin.ctkqiang.nezha_cyber.ads_block.ui.component.NezhaScreenScaffold
@@ -37,6 +40,13 @@ import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaThemePreview
  * 读数的来源与范围必须写在页面上，否则「已拦截 96」会被当成全部历史：累计计数来自持久化，
  * 排行榜与按应用读数只覆盖内存里保留的最近一段观测（工程规则第 24 节要求区分已观测、已拦截、已放行，
  * 并要求统计能按应用维度下钻）。
+ *
+ * 三张图各自绑定一种口径，不允许混用：
+ * - 占比环 = 累计（跨会话）；
+ * - 趋势柱 = 最近观测窗口；
+ * - 对比条 = 最近观测窗口。
+ * 每张图下方都写明自己的口径，因为读者会把同一页里的图放在一起比较，而口径不同的图放在
+ * 一起比较正是最容易得出错误结论的地方。
  */
 @Composable
 fun StatisticsScreen(modifier: Modifier = Modifier) {
@@ -68,6 +78,8 @@ private fun StatisticsContent(
     NezhaScreenScaffold(modifier = modifier) {
         StatisticsHero(blocked = uiState.statistics.blocked)
         Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
+        ProportionCard(statistics = uiState.statistics)
+        Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
         MetricsCard(uiState = uiState)
         Spacer(modifier = Modifier.height(NezhaDimens.blockGap))
         BasicText(
@@ -81,6 +93,8 @@ private fun StatisticsContent(
                 style = NezhaTheme.typography.caption.copy(color = palette.brand),
             )
         }
+        Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
+        TrendCard(uiState = uiState)
         Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
         ApplicationTrafficCard(summaries = uiState.applicationTraffic)
         Spacer(modifier = Modifier.height(NezhaDimens.sectionGap))
@@ -173,6 +187,13 @@ private fun RulesCard(uiState: StatisticsUiState) {
     }
 }
 
+/**
+ * 最近拦截最多的域名。
+ *
+ * 这一张只有一条序列（全部是拦截计数），因此 `rest` 恒为 0、条长就是拦截次数。
+ * 只放「已拦截」一个图例而不是照抄两档：给一条序列配一个恒为空图例，会让读者去找那条
+ * 根本不存在的灰色柱。
+ */
 @Composable
 private fun TopBlockedCard(domains: List<BlockedDomainCount>) {
     val palette = NezhaTheme.palette
@@ -188,22 +209,21 @@ private fun TopBlockedCard(domains: List<BlockedDomainCount>) {
                 style = NezhaTheme.typography.caption.copy(color = palette.textSecondary),
             )
         } else {
-            domains.forEach { domain ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    BasicText(
-                        text = domain.host,
-                        modifier = Modifier.weight(1f),
-                        style = NezhaTheme.typography.body.copy(color = palette.textPrimary),
+            NezhaChartLegendEntry(
+                color = palette.brand,
+                label = stringResource(R.string.statistics_legend_blocked),
+            )
+            Spacer(modifier = Modifier.height(NezhaDimens.blockGap))
+            NezhaComparisonChart(
+                bars = domains.map { domain ->
+                    NezhaComparisonBar(
+                        label = domain.host,
+                        highlighted = domain.count.toLong(),
+                        rest = 0L,
+                        trailing = stringResource(R.string.statistics_count_value, domain.count),
                     )
-                    BasicText(
-                        text = stringResource(R.string.statistics_count_value, domain.count),
-                        style = NezhaTheme.typography.label.copy(color = palette.brand),
-                    )
-                }
-            }
+                },
+            )
             Spacer(modifier = Modifier.height(NezhaDimens.blockGap))
             BasicText(
                 text = stringResource(R.string.statistics_top_note),
