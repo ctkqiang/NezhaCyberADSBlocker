@@ -79,20 +79,10 @@
     </service>
 
     <!--
-      通知监听服务。它是用户可见的「通知使用权」授权对象：用户必须在系统设置里手动开启，
-      应用无法自行请求。declared 为 exported=false 的理由与上面的 VPN 服务一致——
-      只有系统进程会绑定它，而系统自身的绑定请求在权限检查里走的是「调用方即系统」这条路径；
-      外部应用既绑不上，即使绑上也缺少 BIND_NOTIFICATION_LISTENER_SERVICE（签名级）权限。
+      通知监听服务刻意不在这里声明：它只属于 full 变体，声明在 `app/src/full/AndroidManifest.xml`。
+      原因是 Google Play Protect 会因该权限直接拒绝安装互联网来源侧载的 APK（详见
+      `app/build.gradle.kts` 的 capability 维度），把它隔离到变体清单是让 standard 包可侧载的前提。
     -->
-    <service
-      android:name=".notification.platform.NezhaNotificationListenerService"
-      android:exported="false"
-      android:label="@string/notification_service_label"
-      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-      <intent-filter>
-        <action android:name="android.service.notification.NotificationListenerService" />
-      </intent-filter>
-    </service>
 
     <!--
       桌面小组件。

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <!--
+    通知监听服务只存在于 full 变体，standard 变体刻意不声明它。
+
+    理由见 `app/build.gradle.kts` 的 capability 维度说明：Google Play Protect 对**互联网来源侧载**
+    的 APK 有一份自动拦截清单，`BIND_NOTIFICATION_LISTENER_SERVICE` 是其中之一，声明即被拒绝安装。
+    这份拦截只读 manifest，因此把声明挪到本文件、由变体决定是否合并，就能在不改动任何源码的前提下
+    得到一个可侧载的 standard 包，而通知拦截功能在 full 包里完整保留。
+
+    exported=false 且带 BIND_NOTIFICATION_LISTENER_SERVICE 权限：只有系统进程会绑定它，而系统自身的
+    绑定请求在权限检查里走的是「调用方即系统」这条路径；外部应用既绑不上，即使绑上也缺少该签名级权限。
+  -->
+  <application>
+    <service
+      android:name=".notification.platform.NezhaNotificationListenerService"
+      android:exported="false"
+      android:label="@string/notification_service_label"
+      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+      <intent-filter>
+        <action android:name="android.service.notification.NotificationListenerService" />
+      </intent-filter>
+    </service>
+  </application>
+
+</manifest>
