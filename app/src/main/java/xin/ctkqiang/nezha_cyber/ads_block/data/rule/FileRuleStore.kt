@@ -151,7 +151,8 @@ internal class FileRuleStore(private val storageDirectory: File) : RuleStore {
                     }
                 }
                 // 关键词规则由 KeywordBlockingPolicy 单独表达，不在这份存储的职责范围内。
-                RuleSource.KEYWORD -> RuleEditResult.NotFound
+                // 应用专属清单同样是只读内置数据（assets/app_ads.txt），没有落在这里的覆写。
+                RuleSource.KEYWORD, RuleSource.APP_ADS -> RuleEditResult.NotFound
             }
         }
     }
@@ -163,8 +164,9 @@ internal class FileRuleStore(private val storageDirectory: File) : RuleStore {
             when (rule.source) {
                 RuleSource.USER -> userRules[rule.host] = rule
                 RuleSource.BUILTIN -> builtinOverrides[rule.host] = rule.enabled
-                // 关键词规则不落在这个文件里；出现即视为脏数据，跳过而不是让它污染内存状态。
-                RuleSource.KEYWORD -> Unit
+                // 关键词规则不落在这个文件里；应用专属清单同样不落这里。
+                // 出现即视为脏数据，跳过而不是让它污染内存状态。
+                RuleSource.KEYWORD, RuleSource.APP_ADS -> Unit
             }
         }
     }

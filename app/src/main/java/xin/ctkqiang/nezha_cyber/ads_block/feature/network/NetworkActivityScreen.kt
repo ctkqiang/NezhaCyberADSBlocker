@@ -273,6 +273,7 @@ private fun decisionLabel(row: NetworkActivityRow): String {
         if (row.blocked) R.string.network_action_blocked else R.string.network_action_relayed,
     )
     val reason = when (row.source) {
+        RuleSource.APP_ADS -> stringResource(R.string.network_reason_app_ads)
         RuleSource.BUILTIN -> stringResource(R.string.network_reason_builtin)
         RuleSource.KEYWORD -> stringResource(R.string.network_reason_keyword, row.matchedRule.orEmpty())
         RuleSource.USER -> stringResource(R.string.network_reason_user, row.matchedRule.orEmpty())

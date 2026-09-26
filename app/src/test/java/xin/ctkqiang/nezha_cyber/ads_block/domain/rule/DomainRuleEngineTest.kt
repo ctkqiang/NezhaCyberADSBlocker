@@ -4,6 +4,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
+private const val WEIBO = "com.sina.weibo"
+
+private const val TAOBAO = "com.taobao.taobao"
+
+private const val SINA_AD_HOST = "sax.sina.com.cn"
+
 /**
  * 规则引擎的匹配与优先级测试。
  *
@@ -179,6 +185,59 @@ class DomainRuleEngineTest {
         val engine = engineWith(KeywordBlockingPolicy(enabled = false))
 
         assertEquals(FilterDecision.Unknown, engine.evaluate("ads.example.com"))
+    }
+
+    @Test
+    fun `应用专属规则只对目标应用命中并标注来源`() {
+        val engine = DomainRuleEngine(
+            rules = emptyList(),
+            keywordPolicy = KeywordBlockingPolicy(enabled = false),
+            appAdRules = listOf(AppAdRule(packageName = WEIBO, host = SINA_AD_HOST)),
+        )
+
+        val decision = engine.evaluate(SINA_AD_HOST, WEIBO)
+
+        assertEquals(RuleAction.BLOCK, decision.action)
+        assertEquals(RuleSource.APP_ADS, decision.source)
+        assertEquals(SINA_AD_HOST, decision.matchedRule)
+        assertEquals(FilterDecision.Unknown, engine.evaluate(SINA_AD_HOST, TAOBAO))
+        assertEquals(FilterDecision.Unknown, engine.evaluate(SINA_AD_HOST, null))
+    }
+
+    @Test
+    fun `用户放行压过应用专属规则`() {
+        val engine = DomainRuleEngine(
+            rules = listOf(user(host = SINA_AD_HOST, action = RuleAction.ALLOW)),
+            keywordPolicy = KeywordBlockingPolicy(enabled = false),
+            appAdRules = listOf(AppAdRule(packageName = WEIBO, host = SINA_AD_HOST)),
+        )
+
+        assertEquals(RuleAction.ALLOW, engine.evaluate(SINA_AD_HOST, WEIBO).action)
+    }
+
+    @Test
+    fun `应用专属规则压过关键词兜底`() {
+        val engine = DomainRuleEngine(
+            rules = emptyList(),
+            keywordPolicy = KeywordBlockingPolicy(),
+            appAdRules = listOf(AppAdRule(packageName = WEIBO, host = "cdn.ads.example.com")),
+        )
+
+        val decision = engine.evaluate("cdn.ads.example.com", WEIBO)
+
+        assertEquals(RuleSource.APP_ADS, decision.source)
+        assertEquals("cdn.ads.example.com", decision.matchedRule)
+    }
+
+    @Test
+    fun `应用专属规则命中前同样经过域名归一化`() {
+        val engine = DomainRuleEngine(
+            rules = emptyList(),
+            keywordPolicy = KeywordBlockingPolicy(enabled = false),
+            appAdRules = listOf(AppAdRule(packageName = WEIBO, host = SINA_AD_HOST)),
+        )
+
+        assertEquals(RuleAction.BLOCK, engine.evaluate("SAX.Sina.COM.CN", WEIBO).action)
     }
 
     /**

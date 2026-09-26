@@ -11,6 +11,9 @@ package xin.ctkqiang.nezha_cyber.ads_block.domain.rule
  *
  * 当 [source] 是 [RuleSource.KEYWORD] 时，[matchedRule] 是命中的关键词（单个标签，
  * 例如 `ads`），而不是完整域名。界面在解释原因时必须按来源分开措辞，不能把它当成一条域名规则。
+ *
+ * 当 [source] 是 [RuleSource.APP_ADS] 时，[matchedRule] 是被命中的域名规则原文（通配规则带
+ * `*.` 前缀）；它只对目标应用成立的这一层作用域信息不在这里，而是由发起查询的包名决定。
  */
 data class FilterDecision(val action: RuleAction, val matchedRule: String?, val source: RuleSource?) {
     companion object {

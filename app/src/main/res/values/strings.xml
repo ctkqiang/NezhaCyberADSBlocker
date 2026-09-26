@@ -90,6 +90,7 @@
   <string name="network_action_blocked">已拦截</string>
   <string name="network_action_relayed">已放行</string>
   <string name="network_reason_builtin">内置清单</string>
+  <string name="network_reason_app_ads">应用专属规则</string>
   <string name="network_reason_keyword">关键词 %1$s</string>
   <string name="network_reason_user">用户规则 %1$s</string>
   <string name="network_reason_none">未命中任何规则</string>
@@ -240,6 +241,17 @@
   <string name="notification_blocked_original_text_missing">（原通知没有可读取的文本）</string>
   <string name="notification_blocked_channel_name">已拦截的通知</string>
   <string name="notification_blocked_channel_description">被规则拦截的通知会在这里标出，原内容一并保留。</string>
+
+  <!-- 广告拦截通知：拦截发生在网络层，命中内置清单或应用专属规则时提示用户拦下了什么 -->
+  <string name="ad_block_channel_name">广告拦截记录</string>
+  <string name="ad_block_channel_description">开启保护后，被拦下的广告与追踪请求会在这里提示。</string>
+  <string name="ad_block_title">已拦截广告请求</string>
+  <string name="ad_block_text">来自 %1$s：%2$s</string>
+  <string name="ad_block_body_count">本次会话已拦截 %1$d 条</string>
+  <string name="ad_block_body_domain">域名：%1$s</string>
+  <string name="ad_block_body_app">应用：%1$s</string>
+  <string name="ad_block_body_rule">规则：%1$s</string>
+  <string name="ad_block_app_unknown">未知来源</string>
 
   <!-- 规则页（黑名单与白名单共用同一套文案，只有目标动作不同） -->
   <string name="rules_add_hint">输入域名，例如 ads.example.com</string>
