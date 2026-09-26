@@ -19,6 +19,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.network.vpn.AndroidVpnController
 import xin.ctkqiang.nezha_cyber.ads_block.ui.data.NezhaDataCompositionRoot
 import xin.ctkqiang.nezha_cyber.ads_block.ui.navigation.NezhaNavigationShell
 import xin.ctkqiang.nezha_cyber.ads_block.ui.theme.NezhaTheme
+import xin.ctkqiang.nezha_cyber.ads_block.widget.NezhaWidgetProvider
 
 /**
  * 应用唯一的 Activity。
@@ -50,6 +51,11 @@ class MainActivity : ComponentActivity() {
             val isDark = themePreference.isDark(isSystemInDarkTheme())
             // 系统栏样式是固定值，不会自己跟着主题走，因此主题一变就要重新应用一次。
             LaunchedEffect(isDark) { applySystemBarAppearance(isDark) }
+            // 会话状态一变就让桌面小组件跟上：小组件每 30 分钟才被系统刷新一次，
+            // 光靠那个周期，用户在应用里开了保护、再回到桌面会看到一张说「已停止」的卡。
+            // 首次进入组合时也会触发一次，正好把桌面的状态对齐。
+            val session by vpnController.session.collectAsStateWithLifecycle()
+            LaunchedEffect(session) { NezhaWidgetProvider.refreshAll(this@MainActivity) }
             NezhaTheme(darkTheme = isDark) {
                 NezhaDataCompositionRoot(container = container) {
                     VpnCompositionRoot(vpnController = vpnController) {
