@@ -94,6 +94,148 @@
       </intent-filter>
     </service>
 
+    <!--
+      桌面小组件。
+
+      exported 保持 false：APPWIDGET_UPDATE 由系统按组件定向投递，而桌面上的点按走的是
+      PendingIntent——它以本应用的身份执行，因此不需要对外导出。把组件的刷新入口暴露给任意应用
+      没有意义，只会多一个可被滥用的入口。
+
+      自定义动作 WIDGET_REFRESH 用于「应用内的改动让桌面跟上」：应用自己用 setPackage 定向发送，
+      由这十条 receiver 各自刷新自己的实例。Android 8 起不再投递隐式广播，定向的仍会送达。
+
+      每条 receiver 都必须有自己的 label，否则选择器里十种小组件会全叫「哪吒反广」。
+    -->
+    <receiver
+      android:name=".widget.NezhaProtectionToggleWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_protection_toggle_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_protection_toggle_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaBlockedCountWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_blocked_count_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_blocked_count_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaBlockedRatioWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_blocked_ratio_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_blocked_ratio_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaLatestBlockedWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_latest_blocked_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_latest_blocked_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaProtectedApplicationsWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_protected_applications_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_protected_applications_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaObservedTotalWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_observed_total_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_observed_total_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaRuleScaleWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_rule_scale_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_rule_scale_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaTopBlockedApplicationsWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_top_blocked_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_top_blocked_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaBlockedTrendWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_blocked_trend_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_blocked_trend_info" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.NezhaOverviewWidgetProvider"
+      android:exported="false"
+      android:label="@string/widget_overview_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="xin.ctkqiang.nezha_cyber.ads_block.action.WIDGET_REFRESH" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/nezha_widget_overview_info" />
+    </receiver>
+
   </application>
 
 </manifest>
