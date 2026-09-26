@@ -1,0 +1,64 @@
+# 应用专属广告域名清单（唯一来源，随应用打包，运行时只读 —— 工程规则第 44 节）
+#
+# 格式：每行「<包名> <域名>」，UTF-8 / LF，忽略空行与 # 注释，通配符只允许 *. 前缀。
+# 这些域名只对左侧包名对应的应用生效；其它应用请求同一个域名不受影响。
+#
+# 收录标准只有一条：能确认是广告或追踪域名。命名里带 ads / tracker 不构成证据
+# （工程规则第 17、32 节），因此本清单刻意保持短小——宁可少列，也不要把应用的核心接口
+# 误当广告：那条域名一旦拦错，破坏的是应用本身的功能。
+#
+# 与 assets/domains.txt 的关系：domains.txt 是全局清单，对所有应用生效；本文件是按应用
+# 收窄的补充。二者都是只读内置规则，用户显式放行规则的优先级最高，可覆盖这里的任意一条。
+#
+# 本文件没有版本号，也不需要：它不导入持久层、没有用户覆写，每次启动整体重新加载，
+# 因此不存在「已安装用户拿不到新增条目」的问题（与第 39.3 节的全局清单不同）。
+#
+# 需要补充域名时，直接按同样格式追加即可，不必改动代码。
+
+# 微博（com.sina.weibo）：新浪广告交易、广告位与营销域名
+com.sina.weibo sax.sina.com.cn
+com.sina.weibo saxn.sina.com.cn
+com.sina.weibo sinaads.sina.com.cn
+com.sina.weibo adbox.sina.com.cn
+com.sina.weibo dcads.sina.com.cn
+com.sina.weibo emarketing.sina.com.cn
+
+# 淘宝（com.taobao.taobao）：阿里妈妈广告交易与广告埋点域名
+com.taobao.taobao tanx.com
+com.taobao.taobao *.tanx.com
+com.taobao.taobao alimama.com
+com.taobao.taobao *.alimama.com
+com.taobao.taobao atanx.alicdn.com
+com.taobao.taobao adash.m.taobao.com
+com.taobao.taobao adashx.ut.taobao.com
+
+# 高德地图（com.autonavi.minimap）：属阿里系，广告走阿里妈妈交易
+com.autonavi.minimap tanx.com
+com.autonavi.minimap *.tanx.com
+com.autonavi.minimap alimama.com
+com.autonavi.minimap *.alimama.com
+
+# 百度地图（com.baidu.BaiduMap）：百度联盟广告域名
+com.baidu.BaiduMap mobads.baidu.com
+com.baidu.BaiduMap pos.baidu.com
+com.baidu.BaiduMap cpro.baidu.com
+com.baidu.BaiduMap cbjs.baidu.com
+com.baidu.BaiduMap afd.baidu.com
+
+# 微信（com.tencent.mm）：腾讯广点通广告域名
+com.tencent.mm gdt.qq.com
+com.tencent.mm *.gdt.qq.com
+com.tencent.mm e.qq.com
+com.tencent.mm ad.qq.com
+com.tencent.mm adsview.qq.com
+com.tencent.mm pgdt.gtimg.cn
+
+# 腾讯地图（com.tencent.map）：同上，广点通广告域名
+com.tencent.map gdt.qq.com
+com.tencent.map *.gdt.qq.com
+com.tencent.map e.qq.com
+com.tencent.map pgdt.gtimg.cn
+
+# 拼多多（com.xunmeng.pinduoduo）：暂未确认到可断言为广告的独立域名。
+# 这里不编造：无法确认是广告的域名一旦拦错，破坏的是应用功能本身（工程规则第 17、32 节）。
+# 确认后按同一格式追加即可。

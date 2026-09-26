@@ -5,6 +5,7 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -20,6 +21,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.data.database.NezhaDatabaseFactory
 import xin.ctkqiang.nezha_cyber.ads_block.data.notification.RoomNotificationRuleStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.observation.FileObservationStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.privacy.FilePrivacyPolicyStore
+import xin.ctkqiang.nezha_cyber.ads_block.data.rule.AppAdCatalogReader
 import xin.ctkqiang.nezha_cyber.ads_block.data.rule.BuiltinDomainCatalog
 import xin.ctkqiang.nezha_cyber.ads_block.data.rule.FileKeywordPolicyStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.rule.FileRuleStore
@@ -32,6 +34,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.domain.notification.NotificationRuleEn
 import xin.ctkqiang.nezha_cyber.ads_block.domain.notification.NotificationRuleStore
 import xin.ctkqiang.nezha_cyber.ads_block.domain.observation.ObservationStore
 import xin.ctkqiang.nezha_cyber.ads_block.domain.privacy.PrivacyPolicyStore
+import xin.ctkqiang.nezha_cyber.ads_block.domain.rule.AppAdRule
 import xin.ctkqiang.nezha_cyber.ads_block.domain.rule.DomainRuleEngine
 import xin.ctkqiang.nezha_cyber.ads_block.domain.rule.KeywordBlockingPolicy
 import xin.ctkqiang.nezha_cyber.ads_block.domain.rule.KeywordPolicyStore
@@ -126,23 +129,34 @@ class AppContainer(context: Context) {
         )
 
     /**
-     * 规则引擎随规则快照或关键词策略变化重建。
+     * 应用专属广告清单（assets/app_ads.txt，第 44 节）。
+     *
+     * 它不落持久层、也没有用户覆写，因此只是一个由 [warmUp] 一次性填充的内存状态：
+     * 与全局内置清单不同，这里不需要版本号，也不需要合并语义。
+     */
+    private val appAdRules = MutableStateFlow<List<AppAdRule>>(emptyList())
+
+    private val appAdCatalogReader = AppAdCatalogReader(applicationContext.assets)
+
+    /**
+     * 规则引擎随规则快照、关键词策略或应用专属清单变化重建。
      *
      * 用 `stateIn` 而不是每次查询现建：清单有数万条，重建索引是毫秒级的，可以接受；
      * 但绝不能在每个 DNS 查询上重建。中继只读 [StateFlow.value]，因此始终拿到一个完整索引。
      *
-     * 两个上游都必须合并进来：只订阅其中一个，就会让另一处的改动在下一次重建之前不生效，
+     * 三个上游都必须合并进来：只订阅其中一部分，就会让另一处的改动在下一次重建之前不生效，
      * 表现为「刚加的关键词不管用，直到重启」。
      */
     val ruleEngine: StateFlow<RuleEngine> = combine(
         ruleStore.snapshot,
         keywordPolicyStore.policy,
-    ) { snapshot, keywordPolicy ->
-        DomainRuleEngine(snapshot.rules, keywordPolicy)
+        appAdRules,
+    ) { snapshot, keywordPolicy, appAdCatalog ->
+        DomainRuleEngine(snapshot.rules, keywordPolicy, appAdCatalog)
     }.stateIn(
         scope = containerScope,
         started = SharingStarted.Eagerly,
-        initialValue = DomainRuleEngine(emptyList(), KeywordBlockingPolicy.Default),
+        initialValue = DomainRuleEngine(emptyList(), KeywordBlockingPolicy.Default, emptyList()),
     )
 
     /**
@@ -158,6 +172,7 @@ class AppContainer(context: Context) {
             privacyPolicyStore.load()
             val catalog = BuiltinDomainCatalog(applicationContext.assets).readCatalog()
             ruleStore.applyBuiltinCatalog(catalog.hosts, catalog.version)
+            appAdRules.value = appAdCatalogReader.readCatalog()
             protectedApplicationStore.load()
             observationStore.load()
             notificationRuleStore.load()
