@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <color name="nezha_window_background">#101012</color>
+  <!-- 深色下的窗口底色，与 NezhaPalette 的 darkNezhaPalette.background 保持同值。 -->
+  <color name="nezha_window_background">#040507</color>
 </resources>

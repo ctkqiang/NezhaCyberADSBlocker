@@ -16,6 +16,8 @@ import xin.ctkqiang.nezha_cyber.ads_block.domain.analysis.ApkAnalysisResult
 import xin.ctkqiang.nezha_cyber.ads_block.domain.analysis.ApkAnalyzer
 import xin.ctkqiang.nezha_cyber.ads_block.domain.analysis.ApkSource
 import xin.ctkqiang.nezha_cyber.ads_block.domain.analysis.DomainCandidate
+import xin.ctkqiang.nezha_cyber.ads_block.domain.appearance.ThemePreference
+import xin.ctkqiang.nezha_cyber.ads_block.domain.appearance.ThemePreferenceStore
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.ApplicationPermission
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.ApplicationPermissionSource
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.InstalledApplication
@@ -81,6 +83,7 @@ internal fun NezhaDataPreviewHost(
         LocalSystemSettingsLauncher provides PreviewSystemSettingsLauncher(),
         LocalApkAnalyzer provides PreviewApkAnalyzer(),
         LocalApplicationIconLoader provides PreviewApplicationIconLoader(),
+        LocalThemePreferenceStore provides PreviewThemePreferenceStore(),
         content = content,
     )
 }
@@ -156,6 +159,17 @@ private class PreviewSystemSettingsLauncher(dashboardAvailable: Boolean = true) 
     override fun openPrivacyDashboard() = Unit
 
     override fun openDeveloperOptions() = Unit
+}
+
+/** 预览用的外观偏好。预览里改不动它，但设置页必须能渲染出当前选中的那一档。 */
+private class PreviewThemePreferenceStore : ThemePreferenceStore {
+    private val mutablePreference = MutableStateFlow(ThemePreference.System)
+
+    override val preference: StateFlow<ThemePreference> = mutablePreference.asStateFlow()
+
+    override suspend fun setPreference(preference: ThemePreference) {
+        mutablePreference.value = preference
+    }
 }
 
 /**

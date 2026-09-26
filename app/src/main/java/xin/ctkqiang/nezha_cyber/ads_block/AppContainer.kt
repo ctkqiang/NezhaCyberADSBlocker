@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import xin.ctkqiang.nezha_cyber.ads_block.data.analysis.AndroidApkAnalyzer
+import xin.ctkqiang.nezha_cyber.ads_block.data.appearance.FileThemePreferenceStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.application.FileProtectedApplicationStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.application.PackageManagerApplicationSource
 import xin.ctkqiang.nezha_cyber.ads_block.data.application.PackageManagerPermissionSource
@@ -26,6 +27,7 @@ import xin.ctkqiang.nezha_cyber.ads_block.data.rule.BuiltinDomainCatalog
 import xin.ctkqiang.nezha_cyber.ads_block.data.rule.FileKeywordPolicyStore
 import xin.ctkqiang.nezha_cyber.ads_block.data.rule.FileRuleStore
 import xin.ctkqiang.nezha_cyber.ads_block.domain.analysis.ApkAnalyzer
+import xin.ctkqiang.nezha_cyber.ads_block.domain.appearance.ThemePreferenceStore
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.ApplicationPermissionSource
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.InstalledApplicationSource
 import xin.ctkqiang.nezha_cyber.ads_block.domain.application.ProtectedApplicationStore
@@ -62,6 +64,15 @@ class AppContainer(context: Context) {
     private val containerScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val ruleStore: RuleStore = FileRuleStore(storageDirectory)
+
+    /**
+     * 外观主题偏好。
+     *
+     * 这是容器里唯一在**构造时**读盘的存储（见 `ThemePreferenceStore` 的说明）：主题在第一帧
+     * 就要用上，晚一步读出来会先画一帧跟随系统的界面再跳成用户选的那一档，每次启动都闪一下。
+     * 代价是启动路径上多一次几十字节的文件读，换掉一次可见的闪烁。
+     */
+    val themePreferenceStore: ThemePreferenceStore = FileThemePreferenceStore(storageDirectory)
 
     /**
      * 隐私与安全策略。声明在观测存储之前：观测存储要用它决定「是否记录」与「保留多少」，

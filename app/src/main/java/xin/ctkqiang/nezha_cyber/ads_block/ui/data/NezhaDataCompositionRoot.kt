@@ -26,6 +26,7 @@ internal fun NezhaDataCompositionRoot(container: AppContainer, content: @Composa
         LocalNotificationAccessSource provides container.notificationAccessSource,
         LocalApkAnalyzer provides container.apkAnalyzer,
         LocalApplicationIconLoader provides container.applicationIconLoader,
+        LocalThemePreferenceStore provides container.themePreferenceStore,
         content = content,
     )
 }

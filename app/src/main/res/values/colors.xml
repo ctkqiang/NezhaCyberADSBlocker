@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <color name="nezha_red">#C62828</color>
-  <color name="nezha_window_background">#FFFFFF</color>
+  <!--
+    窗口底色（Compose 首帧之前的那个窗口）。取值必须与 UI 主题里的 background 完全一致：
+    两者只要有一点差异，启动瞬间就会看到一层色差闪一下。
+    对应的主题色在 ui/theme/NezhaPalette.kt，改一处必须同时改另一处。
+  -->
+  <color name="nezha_window_background">#F7F7F9</color>
   <!--
     图标底色。取值与 logo 自身的背景一致，因此前景内缩后留下的那一圈与底色连成一片，
     看不到方形边界。改这个值必须同时改 assets/logo.png，否则两者对不上就会露出方框。
