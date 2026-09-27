@@ -1,0 +1,120 @@
+# 发版工作流：推送 v* tag 时构建两个变体的签名 APK，并挂到 GitHub Release。
+#
+# 三个由需求决定的要点写在前面，免得后来人反推：
+#
+# 1. 版本号由 tag 驱动。v1.2.3 → versionName 1.2.3、versionCode 10203
+#    （major×10000 + minor×100 + patch）。构建脚本通过 NEZHA_VERSION_NAME /
+#    NEZHA_VERSION_CODE 接收；本地不设这两个变量时回退到仓库里的 0.1.0 / 1，
+#    因此本地构建行为不受影响。
+# 2. 发布密钥是刻意公开的。app/nezha-release.jks 随仓库提交，口令的明文就在下面 env 里。
+#    任何人都能复现出签名一致的安装包；代价是任何人都能签出冒充本应用的 APK，且无法吊销。
+#    这是权衡后的选择，不是疏忽。
+# 3. 发版前跑质量门禁。ktlintCheck / detekt / test 任一不通过就不发版，避免把「编译得过
+#    但测试是红的」版本推给用户。
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# 创建 Release 需要写权限：默认的 GITHUB_TOKEN 是只读的，缺了这一段会在最后一步 403。
+permissions:
+  contents: write
+
+env:
+  # 明文口令。见文件头第 2 条：这是刻意公开的，不是泄露。
+  # 这把密钥库同时被本机的 local.properties 引用，两条构建路径因此签出同一个身份；
+  # 若哪天换了密钥库，必须同时改这里与 local.properties，否则本地与 CI 会签出两把不同的签名。
+  NEZHA_KEYSTORE: app/nezha-release.jks
+  NEZHA_KEYSTORE_PASSWORD: nezha2024
+  NEZHA_KEYSTORE_ALIAS: nezha
+  NEZHA_KEY_PASSWORD: nezha2024
+
+jobs:
+  release:
+    name: 构建并发布
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 从 tag 解析版本号
+        id: version
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          # 只接受 v<major>.<minor>.<patch>。含糊的 tag（v1、v1.2、v1.2.3-rc1）宁可在这里
+          # 报错，也不要猜出一个语义不明却已经发出去的版本号。
+          if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::tag ${tag} 不是 v<major>.<minor>.<patch> 形式，无法解析版本号"
+            exit 1
+          fi
+          IFS='.' read -r major minor patch <<< "${version}"
+          code=$(( major * 10000 + minor * 100 + patch ))
+          # Android 的 versionCode 上限是 2100000000，超出会被系统拒绝安装。
+          if (( code > 2100000000 )); then
+            echo "::error::由 ${tag} 换算出的 versionCode ${code} 超过 Android 上限 2100000000"
+            exit 1
+          fi
+          echo "name=${version}" >> "${GITHUB_OUTPUT}"
+          echo "code=${code}" >> "${GITHUB_OUTPUT}"
+          echo "解析结果：versionName=${version} versionCode=${code}"
+
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 配置 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 质量门禁
+        run: ./gradlew --console=plain ktlintCheck detekt test
+
+      - name: 构建两个变体的 release 包
+        env:
+          NEZHA_VERSION_NAME: ${{ steps.version.outputs.name }}
+          NEZHA_VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: ./gradlew --console=plain assembleStandardRelease assembleFullRelease
+
+      - name: 校验 APK 签名
+        run: |
+          set -euo pipefail
+          # 取版本号最高的那套 build-tools；固定某个版本号会在镜像更新后失效。
+          apksigner="$(find "${ANDROID_HOME}/build-tools" -type f -name apksigner | sort | tail -n 1)"
+          if [[ -z "${apksigner}" ]]; then
+            echo "::error::在 ${ANDROID_HOME}/build-tools 下找不到 apksigner"
+            exit 1
+          fi
+          "${apksigner}" verify --print-certs \
+            app/build/outputs/apk/standard/release/app-standard-release.apk \
+            app/build/outputs/apk/full/release/app-full-release.apk
+
+      - name: 重命名产物并生成校验和
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp app/build/outputs/apk/standard/release/app-standard-release.apk \
+            "dist/nezha-${VERSION}-standard.apk"
+          cp app/build/outputs/apk/full/release/app-full-release.apk \
+            "dist/nezha-${VERSION}-full.apk"
+          # 每个 APK 配一个同名 .sha256：用户下载后在本地 sha256sum -c 即可核对完整性，
+          # 也能据此确认手里这个包确实来自本仓库的这次构建。
+          cd dist
+          for apk in ./*.apk; do sha256sum "${apk}" > "${apk}.sha256"; done
+          ls -l
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 更新说明按自上一个 tag 以来的 PR / 提交自动生成，不用手工维护 changelog。
+          generate_release_notes: true
+          files: |
+            dist/*.apk
+            dist/*.sha256

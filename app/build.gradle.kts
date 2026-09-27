@@ -21,6 +21,21 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+/** 版本号的回退值：未注入环境变量时使用，与首次发布的取值保持一致。 */
+val fallbackVersionCode = 1
+
+val fallbackVersionName = "0.1.0"
+
+/**
+ * 由发版工作流从 git tag 注入的版本号。
+ *
+ * 工作流把 `v1.2.3` 解析成 `NEZHA_VERSION_NAME=1.2.3` 与 `NEZHA_VERSION_CODE=10203`
+ * （major×10000 + minor×100 + patch）后传入。本地构建不设这两个变量，取值与之前完全一致。
+ */
+val injectedVersionName = System.getenv("NEZHA_VERSION_NAME")?.takeIf { it.isNotBlank() }
+
+val injectedVersionCode = System.getenv("NEZHA_VERSION_CODE")?.toIntOrNull()
+
 android {
     namespace = "xin.ctkqiang.nezha_cyber.ads_block"
     compileSdk = 36
@@ -29,8 +44,8 @@ android {
         applicationId = "xin.ctkqiang.nezha_cyber.ads_block"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = injectedVersionCode ?: fallbackVersionCode
+        versionName = injectedVersionName ?: fallbackVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -65,11 +80,15 @@ android {
     /**
      * Release 签名配置。
      *
-     * 密钥库路径与口令只从 `local.properties`（本机）或环境变量（CI）读取，绝不硬编码进构建脚本：
-     * 工程规则第 0.3 节（不收集用户数据）同样适用于开发者凭据——把口令写进仓库等于公开。
+     * 密钥库路径与口令从 `local.properties`（本机）或环境变量（CI）读取，调用方因此不必改动脚本。
      *
-     * 未配置时 release 构建回退到 debug 签名，便于本地验证；但发布前必须配置正式密钥库，
-     * 否则 Play 上传与部分系统安装器会拒绝。
+     * **本项目的发布密钥是刻意公开的**：`app/nezha-release.jks` 随仓库提交，口令明文写在
+     * `.github/workflows/release.yml` 的 `env` 里，任何人都能复现出签名一致的安装包。代价同样明确
+     * ——任何人都能用它签出冒充本应用的 APK，且签名无法吊销。这是权衡后的选择，不是疏忽：可复现性
+     * 与可验证性在这里优先于签名独占。
+     *
+     * 未配置时 release 构建回退到 debug 签名，便于本地验证；正式发版必须提供密钥库，否则部分系统
+     * 安装器会拒绝安装。
      */
     signingConfigs {
         create("release") {
