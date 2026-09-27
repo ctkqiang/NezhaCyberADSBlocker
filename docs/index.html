@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>哪吒反广 · 使用与实现说明</title>
+<meta name="description" content="哪吒反广（NezhaCyberADSBlocker）的使用说明与实现笔记：逐应用 DNS 过滤怎么工作、规则从哪来、边界在哪。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="shell">
+    <div class="identity">
+      <img src="../assets/logo.png" alt="哪吒反广的应用图标">
+      <h1>哪吒反广<span class="latin">Nezha Cyber ADS Blocker</span></h1>
+    </div>
+    <p class="tagline">
+      一个跑在手机本地的广告与追踪拦截工具。它不碰页面，也不碰加密流量，
+      而是在域名解析这一步把请求拦下来。没有遥测，没有账号，数据不出设备。
+    </p>
+    <ul class="facts">
+      <li>Android 8.0 以上</li>
+      <li>包名 xin.ctkqiang.nezha_cyber.ads_block</li>
+      <li>当前版本 0.1.0</li>
+      <li>开源</li>
+      <li>不收集任何数据</li>
+    </ul>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="rail" aria-label="目录">
+    <p class="rail-title">目录</p>
+    <ol>
+      <li><a href="#overview">它做什么</a></li>
+      <li><a href="#how">怎么拦的</a></li>
+      <li><a href="#install">装哪个包</a></li>
+      <li><a href="#start">上手</a></li>
+      <li><a href="#rules">规则从哪来</a></li>
+      <li><a href="#privacy">数据去哪了</a></li>
+      <li><a href="#build">自己构建、自己发版</a></li>
+      <li><a href="#limits">拦不住的情况</a></li>
+      <li><a href="#faq">常见问题</a></li>
+    </ol>
+  </nav>
+
+  <main class="prose">
+
+    <section id="overview">
+      <h2>它做什么</h2>
+      <p class="lede">
+        逐应用生效的域名黑名单，做成系统 VPN 的样子，但只接管域名解析。
+      </p>
+      <p>
+        你可以把它理解成一个按应用开关的「域名防火墙」。在应用页里勾上要保护的程序，
+        它们发出的 DNS 查询会先进本机的规则引擎过一遍；没勾的应用完全不走隧道，
+        上网行为和装它之前没有区别。
+      </p>
+      <p>
+        拦截发生在应用拿到 IP 地址之前，所以它对 HTTPS、HTTP/2、HTTP/3 一视同仁，
+        也不需要理解任何一个字节的加密内容。不装证书，不做中间人，不改响应。
+        这个选择的代价同样是明确的：它只能按域名拦，同一个域名下哪些是广告、
+        哪些是正文，它分不出来。
+      </p>
+      <p>
+        它不是 APK 字符串扫描器。应用里翻出来的域名字符串只是「候选」，
+        真正能说明问题的是运行时实际发出了哪些请求，两者在界面上是分开标的。
+      </p>
+    </section>
+
+    <section id="how">
+      <h2>怎么拦的</h2>
+      <p>
+        隧道只捕获一个地址：<code>10.111.222.2/32</code>。这个地址是应用自己编出来的，
+        隧道外面没有任何主机在用。
+      </p>
+      <p>
+        这里有个坑值得说一句。如果偷懒，直接把真实的 DNS 服务器地址加进路由，
+        那么发往那台机器的其它协议——TCP 53、NTP、机场或酒店的门户认证——
+        也会被一起吸进隧道，然后因为隧道里没人处理而丢掉。用一个虚构地址就不会撞上这件事，
+        隧道里出现的流量在结构上不可能和其它应用重叠。
+      </p>
+
+      <div class="flow">
+        <div class="node">被选中的应用</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node">DNS 查询（UDP:53）</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node node--quiet">隧道 · 自造地址 10.111.222.2/32</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node node--accent">规则引擎</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="branch">
+          <div class="node node--accent">拦截 · 本机合成应答</div>
+          <div class="node node--pass">放行 · 转发到上游 DNS</div>
+        </div>
+      </div>
+
+      <p>
+        放行的查询由中继线程用受保护的 socket 送出去，绕过隧道，直接问隧道之外那张网的 DNS 服务器。
+        MTU 取 1500，够跑 DNS 这种小包，不需要分片；真的超过一个 MTU 的应答会直接丢弃，
+        让客户端自己重试，而不是在隧道里维护分片状态。
+      </p>
+      <p>
+        换网的时候只把新的上游地址推给中继，隧道不重建——隧道里唯一被捕获的地址本来就是自造的，
+        和具体走 Wi-Fi 还是蜂窝没关系。你在通知栏里按了停止，它就不会被系统拉回来。
+      </p>
+
+      <div class="card card--accent">
+        <h3>命中之后回什么</h3>
+        <p>
+          被拦下的域名由本机直接答复，不会向上游发起任何查询，所以你的访问意图不会漏给解析服务。
+          回哪一种可以在设置里选，三种的差别只在客户端怎么理解这次失败：
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>方式</th><th>语义</th><th>什么时候用它</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>NxDomain</code>（默认）</td>
+                <td>域名不存在</td>
+                <td>最标准。个别客户端会误以为域名没了，转去试备用域名</td>
+              </tr>
+              <tr>
+                <td><code>Refused</code></td>
+                <td>本解析器拒绝解析</td>
+                <td>不想被读成「域名失效」时用</td>
+              </tr>
+              <tr>
+                <td><code>ZeroAddress</code></td>
+                <td>返回 <code>0.0.0.0</code></td>
+                <td>hosts 屏蔽的老写法。连接立刻失败，广告内容拿不到</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>装哪个包</h2>
+      <p>
+        每个版本都出两个包，差别只有一处：要不要通知监听服务。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>包</th><th>通知拦截</th><th>侧载</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>standard</code></td>
+              <td>没有（导航里也不显示入口）</td>
+              <td>浏览器、聊天工具下载后直接装</td>
+            </tr>
+            <tr>
+              <td><code>full</code></td>
+              <td>完整可用</td>
+              <td>安装前要先关掉「Play 保护机制」</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        分两个包不是洁癖。Google Play Protect 有一份自动拦截清单，声明了
+        <code>BIND_NOTIFICATION_LISTENER_SERVICE</code> 的包会被直接拒绝安装，
+        而这份拦截只看清单文件，跟包里有哪些类无关。把那个 service 挪进
+        <code>full</code> 的专属清单，就能得到一个随便怎么装都行的
+        <code>standard</code> 包，而过滤引擎、规则资产和十种桌面小组件在两个包里是同一份实现。
+      </p>
+      <p>
+        两个包都在 <a href="https://github.com/ctkqiang/NezhaCyberADSBlocker/releases">GitHub Releases</a>
+        下载，每个 APK 旁边配了同名的 <code>.sha256</code>。下载完在本地核一下，能确认拿到的确实是从这个仓库构建出来的东西。
+      </p>
+    </section>
+
+    <section id="start">
+      <h2>上手</h2>
+      <p>
+        装完打开，点「开启保护」，系统弹出 VPN 授权时选允许——这一步绕不过去，也不该绕。
+        Android 13 及以上还会问通知权限，不给的话前台服务的状态通知看不见，
+        你也就没法从通知栏判断它到底有没有在跑。
+      </p>
+      <p>
+        然后切到「应用」页，把要保护的应用一个一个勾上。这里没有「全选」这种设计意图上的捷径，
+        因为逐应用生效正是它和普通全局拦截的区别所在。没勾的应用不走隧道。
+      </p>
+      <p>
+        想停的时候不必回到应用里。通知栏那条常驻通知上就有停止按钮，点了隧道立刻拆掉，
+        相关通知也一并撤下。
+      </p>
+      <div class="card">
+        <h4>被拦下来的东西去哪看</h4>
+        <p>
+          每次拦截都会发一条通知，写清拦了哪个域名、是哪个应用在请求。通知栏里最多同时留 20 条，
+          再多就淘汰最早的——这只是提示，不是记录。「网络活动」页里一条都不会少，那里才是完整流水。
+        </p>
+        <p class="note">
+          这两者的区别要记住：通知只留 20 条，不代表只拦了 20 条。
+        </p>
+      </div>
+    </section>
+
+    <section id="rules">
+      <h2>规则从哪来</h2>
+      <p>
+        所有过滤决策都走同一个引擎，不在代码里散落 <code>if (domain == ...)</code>。
+        优先级是固定的，从上到下：
+      </p>
+      <div class="flow">
+        <div class="node node--accent">用户显式放行</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node node--accent">用户显式阻断</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node">全局内置清单</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node">应用专属清单</div>
+        <div class="link-down" aria-hidden="true"></div>
+        <div class="node node--quiet">关键词兜底</div>
+      </div>
+      <p>
+        你自己定的规则永远压在上面，内置清单无论更新多少次都不会把它悄悄盖掉。
+        关键词兜底排在最后，只在前面几档全都没命中时才轮得到它。
+      </p>
+
+      <h3>内置清单</h3>
+      <p>
+        <code>assets/domains.txt</code>，随包发布，运行时只读，7.6 万条，来自
+        <a href="https://github.com/StevenBlack/hosts">StevenBlack/hosts</a>。
+        清单前面有一大段是专门挡 HTTPDNS 的，这一段值得单独说明。
+      </p>
+      <p>
+        国内应用普遍不用系统解析，而是自己拿 HTTPS 去换 IP 地址，这么建起来的连接在域名层
+        根本看不见。所以这一段不是「又一批广告域名」，而是让后面几万条规则能生效的前提条件。
+        各家去广告规则集都单开一个 HTTPDNS 拦截模块，理由是一样的。
+      </p>
+
+      <h3>应用专属清单</h3>
+      <p>
+        <code>assets/app_ads.txt</code> 每行写「包名 域名」，只对左边的那个应用生效，
+        别的应用请求同一个域名完全不受影响。收条目的门槛只有一条：这个域名本身得是
+        能确认的广告或追踪域名。名字里带 <code>ads</code>、<code>tracker</code> 不算证据。
+      </p>
+      <p>
+        有一类域名一条都不收：同时承载商品图片或正文的主机。它上面确实有广告路径，
+        但在域名这一层拦下去，正常内容会跟着一起被掐掉。这种「拦了不如不拦」的情况，
+        清单里会写明为什么不列，而不是留空让人以为是漏了。
+      </p>
+      <p>
+        条目按证据强度分了「已确认」和「待确认」两档。待确认的意思是：域名本身确认是广告 SDK，
+        但那个应用有没有接入还没逐个验证过。这类允许收录，因为它没有副作用——
+        应用没接这个 SDK 时整条规则不命中，等同于不存在。
+      </p>
+    </section>
+
+    <section id="privacy">
+      <h2>数据去哪了</h2>
+      <p>
+        哪儿也没去。没有遥测，没有埋点，没有统计 SDK，应用里连一个上报通道都没有。
+      </p>
+      <p>
+        观测记录只写元数据：包名、域名、动作、命中的哪条规则、什么时间。请求体、Cookie、
+        令牌、消息内容一律不存。这些记录只在本机，你清掉就没了。
+      </p>
+      <p>
+        记录开关关掉之后就不再写了，但过滤和拦截照常工作——过滤只依赖规则引擎，
+        跟留不留记录没有半点关系。这一点是刻意保证的，否则关掉隐私开关就等于关掉整个保护能力，
+        那就成了二选一。删记录是另一个单独的动作，跟「停止记录」分开放，
+        免得你只是想别再收集，却把已有的诊断数据一起丢了。
+      </p>
+      <div class="card card--accent">
+        <h4>一件它做不到的事</h4>
+        <p>
+          本应用不能关掉陀螺仪、加速度计这些运动传感器。平台压根没给它们设权限，
+          所以不存在「撤销」这个动作可以执行。声称能关的普通应用，要么在 root，要么在骗人。
+        </p>
+        <p>
+          同样地，它也不能改别的应用的授权状态——那是设备所有者才有的能力。所以「隐私与传感器」页
+          只做三件事：把当前确实授予了敏感权限的应用列出来、一键跳到你手机的系统设置页、
+          把关闭传感器的官方路径如实写清楚。
+        </p>
+        <p class="note">
+          不提供点了没反应的开关。那种开关比没有更糟——你会以为自己已经安全了。
+        </p>
+      </div>
+    </section>
+
+    <section id="build">
+      <h2>自己构建、自己发版</h2>
+      <p>
+        本地构建要 JDK 17 和 Android SDK 36。格式化与静态检查是构建闸门，不是评审意见，
+        违规直接让构建失败。提交前钩子会自动跑一遍，所以本地先自己跑通比较省事。
+      </p>
+      <pre><code>./gradlew ktlintCheck detekt
+./gradlew test
+./gradlew assembleFullDebug</code></pre>
+      <p>
+        发版是推 tag 触发的，两条命令，没有别的步骤：
+      </p>
+      <pre><code>git tag v1.0.0
+git push origin v1.0.0</code></pre>
+      <p>
+        版本号从 tag 上取。<code>v1.2.3</code> 会变成
+        <code>versionName=1.2.3</code>、<code>versionCode=10203</code>，
+        算法就是 major×10000 + minor×100 + patch。写成 <code>v1</code>、
+        <code>v1.2</code> 或者带后缀的 <code>v1.2.3-rc1</code> 会被直接拒掉，
+        而不是猜一个语义不明的版本号发出去。
+      </p>
+      <p>
+        <code>ubuntu-latest</code> 上的流水线跑完门禁才打包，构建完还会校验一遍签名，
+        确认没有因为密钥没配上而悄悄退回 debug 签名——那种情况不会报错，但用户装不上去。
+      </p>
+      <div class="card">
+        <h4>发布密钥是公开的</h4>
+        <p>
+          <code>app/nezha-release.jks</code> 就在仓库里，口令明文写在工作流的
+          <code>env</code> 里。这么做是为了让任何人都能复现出签名一致的安装包，
+          从而验证 Release 里的包确实出自本仓库。
+        </p>
+        <p>
+          代价也说清楚：任何人都能用它签出冒充本应用的 APK，而且没法吊销。
+          这是个权衡过的选择，不是疏忽。
+        </p>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2>拦不住的情况</h2>
+      <p>
+        写清楚做不到的事，比列一堆「已支持」有用。下面这些是设计上的边界，不是待修的 bug。
+      </p>
+      <ul>
+        <li>
+          IPv6 和 QUIC 还没覆盖。隧道目前只处理 IPv4/UDP:53，走 IPv6 的解析和
+          UDP:443 上的 HTTP/3 都不在过滤范围内。
+        </li>
+        <li>
+          应用要是自己拿 HTTPDNS 换 IP，绕过系统解析，域名层就看不到它。
+          内置清单里挡掉了一批已知的 HTTPDNS 主机，但不可能穷举完。
+        </li>
+        <li>
+          广告和业务共用同一个域名时拦不了。拦了会把正常内容一起掐掉，
+          这种域名一条都不收。
+        </li>
+        <li>
+          Android 10 以下拿不到连接归属查询，「哪个应用在请求什么」会显示成未知来源。
+          这种情况不猜一个应用出来。
+        </li>
+        <li>
+          逐应用路由在建立隧道时就固定了，运行中改选择需要重建隧道，所以切换保护状态时
+          会短暂断开。
+        </li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>常见问题</h2>
+
+      <dl class="qa">
+        <dt>开启保护之后某个应用不好用了？</dt>
+        <dd>把它加进白名单。白名单的优先级最高，能盖过任何一条内置规则；或者干脆在应用页把它的保护关掉。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>为什么还是能刷到广告？</dt>
+        <dd>常见的原因有三个：那个应用走了 HTTPDNS 绕开系统解析；广告和正文共用一个主机，域名层拦住会伤到正文；或者广告由应用自有的平台承载，压根不出域名。这三种都在「拦不住的情况」里写着。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>通知拦截是把应用的通知拦下来吗？</dt>
+        <dd>不是。系统只允许在通知已经发布之后改变它在通知栏里的去向，没法阻止应用生成通知。展开那条被拦的通知，能看到原应用、命中的规则和原通知的内容。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>它能看我的浏览记录吗？</dt>
+        <dd>看得到域名，看不到内容。存下来的是包名、域名、动作、命中规则和时间这些元数据，没有任何载荷。而且全在本机，随时可以关掉记录或直接清空。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>要装证书吗？要 root 吗？</dt>
+        <dd>都不要。不做 HTTPS 中间人，不依赖 root，也不用无障碍服务去点别人的界面。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>standard 和 full 到底装哪个？</dt>
+        <dd>只要域名过滤就装 standard，随便哪个渠道下载都能装。要用通知拦截装 full，从浏览器之类的地方安装前先关掉 Play 保护机制。</dd>
+      </dl>
+
+      <dl class="qa">
+        <dt>开了保护会拖慢网速吗？</dt>
+        <dd>正常浏览感觉不到。隧道只处理 DNS 这一小撮流量，其余数据一个包都不经过它。</dd>
+      </dl>
+    </section>
+
+  </main>
+</div>
+
+<footer class="colophon">
+  <div class="shell">
+    <p>哪吒反广 · Nezha Cyber ADS Blocker · 包名 xin.ctkqiang.nezha_cyber.ads_block</p>
+    <p>
+      作者：哪吒网络安全的钟智强 ·
+      <a href="https://github.com/ctkqiang/NezhaCyberADSBlocker">源码仓库</a> ·
+      <a href="https://github.com/ctkqiang/NezhaCyberADSBlocker/releases">下载</a>
+    </p>
+    <p>为人民而做，由人民共建。</p>
+  </div>
+</footer>
+
+<script>
+  /*
+    目录高亮当前小节。
+
+    用 IntersectionObserver 而不是监听 scroll：滚动回调每个像素都触发，
+    而这里真正关心的只有「哪一节进入视口」这一个状态变化。
+
+    根元素的上边距留出顶栏的高度，否则小节会一进视口就被判为当前，
+    高亮总比视线慢半拍。
+  */
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+    var sections = links
+      .map(function (link) { return document.querySelector(link.getAttribute('href')); })
+      .filter(Boolean);
+
+    if (!('IntersectionObserver' in window) || sections.length === 0) { return; }
+
+    var visible = new Set();
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) { visible.add(entry.target); }
+          else { visible.delete(entry.target); }
+        });
+
+        var current = sections.find(function (section) { return visible.has(section); });
+        if (!current) { return; }
+
+        links.forEach(function (link) {
+          link.setAttribute('aria-current', link.getAttribute('href') === '#' + current.id ? 'true' : 'false');
+        });
+      },
+      { rootMargin: '-25% 0px -60% 0px', threshold: 0 }
+    );
+
+    sections.forEach(function (section) { observer.observe(section); });
+  })();
+</script>
+
+</body>
+</html>

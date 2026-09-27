@@ -1,0 +1,557 @@
+/*
+  哪吒反广文档站的样式。
+
+  零依赖、零构建：直接双击 docs/index.html 就能看，不需要起服务器。
+  配色与 App 同源——品牌红 #CC1F33（浅色）/ #FF2640（深色），深色底取图标实测的 #040507，
+  这样文档站与 App 是同一个视觉身份，不是另配一套。
+
+  明暗两套走 prefers-color-scheme，不设手动开关：多一个开关就多一份要维护的状态，
+  而跟随系统在绝大多数设备上已经够用。
+
+  版面靠 clamp() 做流体字号与间距，没有断点式的跳变，窗口拖到什么宽度都不会出现
+  「内容挤在左边一窄条」或者「标题大到换行」。
+*/
+
+:root {
+  color-scheme: light dark;
+
+  --accent: #cc1f33;
+  --accent-ink: #ffffff;
+  --accent-wash: rgba(204, 31, 51, 0.1);
+  --accent-glow: rgba(204, 31, 51, 0.22);
+
+  --bg: #f2f2f5;
+  --surface: #ffffff;
+  --surface-sunken: #e9e9ee;
+  --text: #17171a;
+  --muted: #5a5a63;
+  --line: #e0e0e6;
+
+  --shadow-sm: 0 1px 2px rgba(20, 20, 30, 0.05);
+  --shadow-lg: 0 18px 45px -18px rgba(20, 20, 40, 0.25);
+
+  --radius-card: 16px;
+  --radius-pill: 999px;
+  --shell: 1200px;
+  --rail: 232px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent: #ff2640;
+    --accent-wash: rgba(255, 38, 64, 0.14);
+    --accent-glow: rgba(255, 38, 64, 0.26);
+
+    --bg: #040507;
+    --surface: #101014;
+    --surface-sunken: #16161c;
+    --text: #f2f2f4;
+    --muted: #a6a6b0;
+    --line: #26262e;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: clamp(15px, 0.92rem + 0.18vw, 17px);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+  锚点跳转的落点补偿。
+
+  没有它会跳到标题被粘顶栏盖住的位置；数值取顶栏高度，移动端顶栏更矮，
+  所以按视口宽度缩放而不是写死。
+*/
+:where(section, h2, h3) {
+  scroll-margin-top: clamp(72px, 9vw, 108px);
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 0.18s ease, color 0.18s ease;
+}
+
+a:hover {
+  text-decoration-color: var(--accent);
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* 顶栏 */
+
+.masthead {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(40px, 7vw, 88px) 0 clamp(32px, 5vw, 64px);
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(
+      120% 140% at 12% -20%,
+      var(--accent-wash) 0%,
+      transparent 58%
+    ),
+    var(--surface);
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent) 22%,
+    var(--accent) 40%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+.shell {
+  width: min(100% - clamp(32px, 8vw, 88px), var(--shell));
+  margin-inline: auto;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 22px);
+  flex-wrap: wrap;
+}
+
+.identity img {
+  width: clamp(56px, 7vw, 76px);
+  height: auto;
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+}
+
+.identity h1 {
+  margin: 0;
+  font-size: clamp(26px, 1.5rem + 1.8vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.identity .latin {
+  display: block;
+  margin-top: 0.35em;
+  font-size: clamp(12px, 0.7rem + 0.35vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tagline {
+  max-width: 62ch;
+  margin: clamp(20px, 3vw, 32px) 0 0;
+  font-size: clamp(16px, 1rem + 0.35vw, 20px);
+  line-height: 1.7;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: clamp(20px, 3vw, 30px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  padding: 4px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+/* 分栏 */
+
+.layout {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+  width: min(100% - clamp(32px, 8vw, 88px), var(--shell));
+  margin-inline: auto;
+  padding-block: clamp(36px, 5vw, 64px) clamp(64px, 9vw, 120px);
+}
+
+.rail {
+  position: sticky;
+  top: clamp(16px, 3vw, 32px);
+}
+
+.rail-title {
+  margin: 0 0 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rail ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rail;
+}
+
+.rail a {
+  display: block;
+  padding: 7px 12px;
+  border-left: 2px solid transparent;
+  border-radius: 0 8px 8px 0;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.rail a:hover {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+/* 当前所在的小节。由页面末尾那几行 IntersectionObserver 切换。 */
+.rail a[aria-current="true"] {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--accent-wash);
+  font-weight: 600;
+}
+
+/* 正文 */
+
+.prose > section + section {
+  margin-top: clamp(48px, 6vw, 84px);
+}
+
+.prose h2 {
+  margin: 0 0 clamp(14px, 2vw, 22px);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(22px, 1.2rem + 1.2vw, 32px);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.prose h3 {
+  margin: clamp(28px, 3.5vw, 40px) 0 10px;
+  font-size: clamp(17px, 1rem + 0.5vw, 21px);
+  line-height: 1.45;
+}
+
+.prose p {
+  margin: 0 0 1.05em;
+  max-width: 74ch;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.35em;
+  max-width: 76ch;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose li::marker {
+  color: var(--accent);
+}
+
+.lede {
+  font-size: 1.06em;
+  color: var(--muted);
+}
+
+.card {
+  margin: 1.4em 0;
+  padding: clamp(18px, 2.6vw, 28px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.card > :last-child {
+  margin-bottom: 0;
+}
+
+.card--accent {
+  border-left: 3px solid var(--accent);
+  background: linear-gradient(
+      to right,
+      var(--accent-wash),
+      transparent 42%
+    ),
+    var(--surface);
+}
+
+.card h3,
+.card h4 {
+  margin-top: 0;
+}
+
+/* 表格 */
+
+.table-wrap {
+  margin: 1.4em 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94em;
+}
+
+th,
+td {
+  padding: 11px 16px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  background: var(--surface-sunken);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+td code,
+th code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+}
+
+/* 代码 */
+
+pre {
+  margin: 1.2em 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+  line-height: 1.7;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+}
+
+p code,
+li code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-sunken);
+}
+
+/* 流程图。用 flex + 伪元素画箭头，不依赖图片也不依赖 SVG，因此能跟着字号一起缩放。 */
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 1.6em 0;
+}
+
+.node {
+  padding: 11px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.94em;
+  text-align: center;
+}
+
+.node--accent {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 0 0 4px var(--accent-wash), var(--shadow-sm);
+}
+
+.node--quiet {
+  color: var(--muted);
+}
+
+.link-down {
+  position: relative;
+  width: 2px;
+  height: clamp(20px, 3vw, 30px);
+  background: linear-gradient(var(--line), color-mix(in srgb, var(--accent) 60%, var(--line)));
+}
+
+.link-down::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid color-mix(in srgb, var(--accent) 60%, var(--line));
+  border-bottom: 2px solid color-mix(in srgb, var(--accent) 60%, var(--line));
+  transform: translate(-50%, 0) rotate(45deg);
+}
+
+.branch {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 12px;
+  width: min(100%, 640px);
+}
+
+.branch .node--accent {
+  background: var(--accent);
+}
+
+.branch .node--pass {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+
+.note {
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+/* 问答。问题本身就够醒目，不用再加编号。 */
+
+.qa {
+  margin: 0 0 1.6em;
+  max-width: 76ch;
+}
+
+.qa dt {
+  margin-bottom: 0.3em;
+  font-weight: 600;
+}
+
+.qa dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* 页脚 */
+
+.colophon {
+  padding: clamp(28px, 4vw, 44px) 0;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.9em;
+}
+
+.colophon p {
+  margin: 0.35em 0;
+}
+
+/* 窄屏：侧栏收成横向可滑的一条，贴在顶栏下面。 */
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding-top: 20px;
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin-inline: calc(-1 * clamp(16px, 4vw, 44px));
+    padding: 10px clamp(16px, 4vw, 44px);
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .rail-title {
+    display: none;
+  }
+
+  .rail ol {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .rail ol::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail a {
+    white-space: nowrap;
+    border-left: 0;
+    border-radius: var(--radius-pill);
+    background: var(--surface-sunken);
+  }
+
+  .rail a[aria-current="true"] {
+    border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
