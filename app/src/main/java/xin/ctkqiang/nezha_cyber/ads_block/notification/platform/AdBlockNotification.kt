@@ -49,8 +49,10 @@ internal object AdBlockNotification {
     fun build(context: Context, observation: DomainObservation, appLabel: String): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_shield)
-            .setContentTitle(context.getString(R.string.ad_block_title))
-            .setContentText(context.getString(R.string.ad_block_text, appLabel, observation.host))
+            .setLargeIcon(NezhaNotificationIcon.largeIcon(context))
+            .setContentTitle(observation.host)
+            .setContentText(context.getString(R.string.ad_block_body_app, appLabel))
+            .setSubText(context.getString(R.string.ad_block_title))
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(collapsedView(context, observation, appLabel))
             .setCustomBigContentView(expandedView(context, observation, appLabel))

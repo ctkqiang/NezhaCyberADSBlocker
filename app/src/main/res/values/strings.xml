@@ -358,8 +358,6 @@
   <string name="ad_block_channel_name">广告拦截记录</string>
   <string name="ad_block_channel_description">开启保护后，被拦下的广告与追踪请求会在这里提示。</string>
   <string name="ad_block_title">已拦截广告请求</string>
-  <string name="ad_block_text">来自 %1$s：%2$s</string>
-  <string name="ad_block_body_domain">域名：%1$s</string>
   <string name="ad_block_body_app">应用：%1$s</string>
   <string name="ad_block_body_rule">规则：%1$s</string>
   <string name="ad_block_app_unknown">未知来源</string>

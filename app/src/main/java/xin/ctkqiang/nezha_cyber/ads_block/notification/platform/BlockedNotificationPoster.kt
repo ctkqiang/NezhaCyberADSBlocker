@@ -58,6 +58,7 @@ internal class BlockedNotificationPoster(
     private fun build(blocked: BlockedNotification, appLabel: String): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_shield)
+            .setLargeIcon(NezhaNotificationIcon.largeIcon(context))
             .setContentTitle(context.getString(R.string.notification_blocked_title))
             .setContentText(context.getString(R.string.notification_blocked_original_app, appLabel))
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())

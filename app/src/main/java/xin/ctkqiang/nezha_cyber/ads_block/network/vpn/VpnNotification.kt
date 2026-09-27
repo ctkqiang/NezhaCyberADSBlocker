@@ -10,6 +10,7 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import xin.ctkqiang.nezha_cyber.ads_block.R
+import xin.ctkqiang.nezha_cyber.ads_block.notification.platform.NezhaNotificationIcon
 
 /**
  * VPN 前台服务的常驻通知。
@@ -60,6 +61,7 @@ internal object VpnNotification {
     fun build(context: Context, contentIntent: PendingIntent?, stopIntent: PendingIntent?): Notification {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_shield)
+            .setLargeIcon(NezhaNotificationIcon.largeIcon(context))
             .setContentTitle(context.getString(R.string.vpn_notification_title))
             .setContentText(context.getString(R.string.vpn_notification_text))
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
