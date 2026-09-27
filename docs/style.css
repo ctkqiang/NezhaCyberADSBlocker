@@ -466,6 +466,47 @@ li code {
   color: var(--muted);
 }
 
+/*
+  应用截图。
+
+  手机截图是竖图，在桌面宽度下排成一行、在窄屏上叠成一列。每张都有 figcaption
+  说明这是哪一页、在看什么，避免读者只看图不知道上下文。
+
+  截图不放大到撑满容器：原图已经是高分屏，放大反而虚。给一个最大宽度，
+  让多张在一行里也不会被挤变形。
+*/
+
+.shots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: clamp(16px, 2.4vw, 28px);
+  margin: 1.6em 0;
+}
+
+.shot {
+  margin: 0;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  margin-inline: auto;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  background: var(--surface-sunken);
+}
+
+.shot figcaption {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+}
+
 /* 问答。问题本身就够醒目，不用再加编号。 */
 
 .qa {

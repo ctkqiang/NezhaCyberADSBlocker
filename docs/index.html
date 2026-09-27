@@ -223,6 +223,38 @@
           这两者的区别要记住：通知只留 20 条，不代表只拦了 20 条。
         </p>
       </div>
+
+      <div class="shots">
+        <figure class="shot">
+          <img src="screenshots/notifications.png" alt="通知栏里的拦截记录与 VPN 状态通知">
+          <figcaption>通知栏：每条拦截一条通知，常驻那条是 VPN 状态</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="screenshots/network-blocked.png" alt="网络活动页切换到「只看拦截」">
+          <figcaption>网络活动 · 只看拦截：命中「内置清单」的请求被标红</figcaption>
+        </figure>
+      </div>
+
+      <h3>完整流水与统计</h3>
+      <p>
+        「网络活动」页默认显示全部观测，放行的请求也在里面，标注「已放行 · 未命中任何规则」。
+        切到「只看拦截」就只留被拦下的那部分。两种视图都可以按应用筛选，想盯某个应用单独看也行。
+      </p>
+      <p>
+        「统计」页按应用聚合，红色进度条是拦截占比，下面列的是该应用出现频率最高的几个域名。
+        它回答的是「哪个应用最吵、它都在跟谁说话」，而不是「拦了多少条」——后者在网络活动页里数。
+      </p>
+
+      <div class="shots">
+        <figure class="shot">
+          <img src="screenshots/network-all.png" alt="网络活动页显示全部观测请求">
+          <figcaption>网络活动 · 全部：放行的请求同样留痕，标注未命中规则</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="screenshots/statistics.png" alt="统计页按应用展示拦截与观测数据">
+          <figcaption>统计：按应用聚合拦截占比与高频域名</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section id="rules">
