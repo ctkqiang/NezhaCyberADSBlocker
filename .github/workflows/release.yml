@@ -84,15 +84,22 @@ jobs:
       - name: 校验 APK 签名
         run: |
           set -euo pipefail
-          # 取版本号最高的那套 build-tools；固定某个版本号会在镜像更新后失效。
-          apksigner="$(find "${ANDROID_HOME}/build-tools" -type f -name apksigner | sort | tail -n 1)"
+          # 取版本号最高的那套 build-tools。这里用 sort -V 而不是 sort：路径末尾的版本段是数字，
+          # 字典序会把 9.0.0 排在 36.0.0 之后，从而挑出一套更旧、可能不认新签名方案的工具。
+          # 固定写死某个版本号同样不行，镜像更新后那一套会被移除。
+          apksigner="$(find "${ANDROID_HOME}/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           if [[ -z "${apksigner}" ]]; then
             echo "::error::在 ${ANDROID_HOME}/build-tools 下找不到 apksigner"
             exit 1
           fi
-          "${apksigner}" verify --print-certs \
+          # apksigner verify 一次只接受一个 APK：同时传两个会以
+          # 「Unexpected parameter(s) after APK」报错退出，因此这里逐个校验。
+          for apk in \
             app/build/outputs/apk/standard/release/app-standard-release.apk \
-            app/build/outputs/apk/full/release/app-full-release.apk
+            app/build/outputs/apk/full/release/app-full-release.apk; do
+            echo "校验 ${apk}"
+            "${apksigner}" verify --print-certs "${apk}"
+          done
 
       - name: 重命名产物并生成校验和
         env:
