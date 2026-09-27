@@ -3,9 +3,111 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>哪吒反广 · 使用与实现说明</title>
-<meta name="description" content="哪吒反广（NezhaCyberADSBlocker）的使用说明与实现笔记：逐应用 DNS 过滤怎么工作、规则从哪来、边界在哪。">
+<meta name="color-scheme" content="light dark">
+
+<title>哪吒反广 · 逐应用广告与追踪拦截 | Nezha Cyber ADS Blocker</title>
+<meta name="description" content="哪吒反广（NezhaCyberADSBlocker）是一个跑在本地的 Android 广告与追踪拦截工具。用系统 VPN 只接管域名解析，逐应用生效，不碰 TLS、不装证书、不做中间人，不收集任何用户数据。">
+<meta name="keywords" content="哪吒反广,NezhaCyberADSBlocker,广告拦截,去广告,追踪拦截,追踪器,DNS 过滤,域名黑名单,逐应用拦截,Android 去广告,VpnService,隐私保护,开源">
+<meta name="author" content="钟智强">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<!-- 主题色跟随明暗两套配色，与 style.css 里的 --accent 和深色底一致；
+     写在 head 里是为了让浏览器在 CSS 解析前就能给地址栏和滚动条上色。 -->
+<meta name="theme-color" content="#cc1f33" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#040507" media="(prefers-color-scheme: dark)">
+
+<!-- 规范地址。
+     同一份文档存在多个可达形式：自定义域名的镜像、带查询串的链接、带不带结尾斜杠的变体。
+     不指定 canonical，这些都会被当成各自独立的页面，权重被摊薄。 -->
+<link rel="canonical" href="https://ctkqiang.github.io/NezhaCyberADSBlocker/">
+
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+
+<!-- Open Graph。图片用站点图标本身：它是方图，正好对应 Twitter 的 summary 卡片，
+     不为了凑 1200×630 去拉伸一张方图，那只会让缩略图变形。 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="哪吒反广 · Nezha Cyber ADS Blocker">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="哪吒反广 · 逐应用广告与追踪拦截">
+<meta property="og:description" content="跑在本地的 Android 广告与追踪拦截工具。系统 VPN 只接管域名解析，逐应用生效，不碰 TLS、不装证书、不做中间人，不收集任何用户数据。">
+<meta property="og:url" content="https://ctkqiang.github.io/NezhaCyberADSBlocker/">
+<meta property="og:image" content="https://ctkqiang.github.io/NezhaCyberADSBlocker/logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="320">
+<meta property="og:image:height" content="320">
+<meta property="og:image:alt" content="哪吒反广的应用图标">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="哪吒反广 · 逐应用广告与追踪拦截">
+<meta name="twitter:description" content="跑在本地的 Android 广告与追踪拦截工具。系统 VPN 只接管域名解析，逐应用生效，不碰 TLS、不装证书、不做中间人，不收集任何用户数据。">
+<meta name="twitter:image" content="https://ctkqiang.github.io/NezhaCyberADSBlocker/logo.png">
+<meta name="twitter:image:alt" content="哪吒反广的应用图标">
+
 <link rel="stylesheet" href="style.css">
+
+<!--
+  结构化数据。
+
+  除了让人看懂，也让搜索结果能带上更完整的形态：应用名、适用平台、免费、
+  下载地址、源码地址。字段全部取自仓库里已有的事实，不写版本相关的推测值——
+  版本号改了这里要跟着改，所以只登记 README 与文档页上已经写明的 0.1.0。
+
+  没有登记 license：仓库里目前没有 LICENSE 文件，写一个指向仓库首页的地址
+  会被读成「许可证就是那个页面」，属于把不存在的东西说成存在。
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://ctkqiang.github.io/NezhaCyberADSBlocker/#webpage",
+      "url": "https://ctkqiang.github.io/NezhaCyberADSBlocker/",
+      "name": "哪吒反广 · 使用与实现说明",
+      "description": "哪吒反广（NezhaCyberADSBlocker）的使用说明与实现笔记：逐应用 DNS 过滤怎么工作、规则从哪来、边界在哪。",
+      "inLanguage": "zh-CN",
+      "about": {
+        "@id": "https://ctkqiang.github.io/NezhaCyberADSBlocker/#software"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://ctkqiang.github.io/NezhaCyberADSBlocker/#software",
+      "name": "哪吒反广",
+      "alternateName": "Nezha Cyber ADS Blocker",
+      "description": "基于 Android VpnService 的逐应用广告与追踪拦截工具，只接管域名解析，在解析层完成拦截，不碰 TLS、不装证书、不做中间人。",
+      "applicationCategory": "SecurityApplication",
+      "applicationSubCategory": "广告与追踪拦截",
+      "operatingSystem": "Android 8.0 及以上",
+      "softwareVersion": "0.1.0",
+      "inLanguage": "zh-CN",
+      "isAccessibleForFree": true,
+      "downloadUrl": "https://github.com/ctkqiang/NezhaCyberADSBlocker/releases/latest",
+      "installUrl": "https://github.com/ctkqiang/NezhaCyberADSBlocker/releases/latest",
+      "codeRepository": "https://github.com/ctkqiang/NezhaCyberADSBlocker",
+      "image": "https://ctkqiang.github.io/NezhaCyberADSBlocker/logo.png",
+      "featureList": [
+        "逐应用过滤：只对被选中的应用生效，未选中的应用完全不走隧道",
+        "DNS 层拦截：在应用拿到 IP 之前拦下，对 HTTPS、HTTP/2、HTTP/3 一视同仁",
+        "规则引擎：用户显式规则优先于内置清单，内置清单优先于关键词兜底",
+        "应用专属清单：按「包名 + 域名」收窄作用域，避免误伤其他应用",
+        "本地优先：无遥测、无埋点、无统计 SDK，观测记录只存本机"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "钟智强",
+        "email": "johnmelodymel@qq.com"
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
