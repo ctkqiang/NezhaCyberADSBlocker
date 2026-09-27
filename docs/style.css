@@ -483,6 +483,97 @@ li code {
   color: var(--muted);
 }
 
+/* 下载入口。按钮与二维码并排，窄屏时二维码落到按钮下面。 */
+
+.install {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(20px, 3vw, 40px);
+  align-items: center;
+}
+
+.install h3 {
+  margin-top: 0;
+  margin-bottom: 0.4em;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 1.3em 0 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 0 0 4px var(--accent-wash), var(--shadow-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 7px var(--accent-wash), 0 14px 32px -12px var(--accent-glow);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--ghost:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/*
+  二维码的衬底固定为白色，不跟随主题。
+
+  二维码本身是黑模块配白底，深色主题下若让它直接坐在页面底色上，黑模块压在近黑背景里
+  就扫不出来了。这一块白底是功能性的，不是装饰，因此两种主题下都是同一个值。
+*/
+.qr {
+  margin: 0;
+  text-align: center;
+}
+
+.qr img {
+  display: block;
+  width: clamp(132px, 16vw, 176px);
+  height: auto;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr figcaption {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .install {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* 页脚 */
 
 .colophon {
